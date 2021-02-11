@@ -200,10 +200,10 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               Expanded(flex: 1,
                 child: Center(
-                  child: RaisedButton.icon(
-                    icon: Icon(Icons.add),
-                    color: Constants.theme.primaryAccent,
-                    label: Text("New snippet..."),
+                  child: btnLabelIcon(
+                    icon: Icons.add,
+                    backgroundColor: Constants.theme.primaryAccent,
+                    label: "New snippet...",
                     onPressed: () => provider.addSnippet(),
                   )
                 )
@@ -214,13 +214,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 children: <Widget>[
                   ...appState.history.map((h) {
                     return ListTile(
-                      title: Text(h.content, style: textStyleCode()),
-                      subtitle: Text(
-                        h.timestamp.toIso8601String(),
-                        style: textStyleBody()
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.delete_forever),
+                      title: Txt.h2(h.content),
+                      subtitle: Txt.p(h.timestamp.toIso8601String()),
+                      trailing: btnIcon(
+                        icon: Icons.delete_forever,
                         onPressed: () => provider.deleteHistory(h),
                       ),
                     );
