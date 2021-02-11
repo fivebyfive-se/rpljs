@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rpljs/config/constants.dart';
-import 'package:rpljs/widgets/buttons.dart';
-import 'package:rpljs/widgets/text-elements.dart';
+import 'package:rpljs/helpers/buttons.dart';
+import 'package:rpljs/widgets/txt.dart';
 
 typedef AlertDialogBuilder = AlertDialog Function(BuildContext);
 

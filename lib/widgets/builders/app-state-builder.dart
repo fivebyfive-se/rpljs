@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:rpljs/state/app-state-model.dart';
-import 'package:rpljs/state/app-state-provider.dart';
+import 'package:rpljs/services/app-state.dart';
+
 
 typedef AppStateWidgetBuilder = Function(
   BuildContext context,

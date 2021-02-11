@@ -1,5 +1,4 @@
-import 'package:rpljs/state/models/input-history-model.dart';
-import 'package:rpljs/state/models/snippet-model.dart';
+import './models/index.dart';
 
 class AppState {
   AppState({

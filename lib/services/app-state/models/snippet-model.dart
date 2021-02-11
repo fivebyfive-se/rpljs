@@ -42,6 +42,10 @@ class SnippetModel extends BaseModel {
 
   @override
   String toString() => content.truncate();
+
+  @override
+  SnippetModel clone() => SnippetModel
+    .fromAdapter(uuid, label, content, runOnInit);
 }
 
 class SnippetAdapter extends TypeAdapter<SnippetModel> {

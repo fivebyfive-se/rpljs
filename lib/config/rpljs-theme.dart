@@ -2,8 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:rpljs/config/constants.dart';
-import 'package:rpljs/theme/color-helpers.dart';
-import 'package:rpljs/theme/text-style-helpers.dart';
+import 'package:rpljs/helpers/color-helpers.dart';
+import 'package:rpljs/helpers/text-style-helpers.dart';
 
 class RpljsTheme {
   RpljsTheme({

@@ -17,6 +17,8 @@ abstract class BaseModel extends HiveObject {
   /// Domain-specific compare
   int  compareTo(BaseModel other);
 
+  BaseModel clone(); 
+
   BaseModel.fromAdapter(String uuid)
     : uuid = uuid;
 }

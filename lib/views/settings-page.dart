@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
-import 'package:rpljs/config/constants.dart';
-import 'package:rpljs/state/models/snippet-model.dart';
-import 'package:rpljs/theme/text-style-helpers.dart';
 
-import 'package:rpljs/views/base/page-arguments.dart';
-import 'package:rpljs/views/base/page-base.dart';
-import 'package:rpljs/views/base/page-navigator.dart';
+import 'package:rpljs/config/constants.dart';
+
+import 'package:rpljs/helpers/index.dart';
+
+import 'package:rpljs/services/app-state.dart';
+
+import 'package:rpljs/views/base/index.dart';
+
 import 'package:rpljs/widgets/builders/app-state-builder.dart';
 import 'package:rpljs/widgets/builders/confirm-dialog-builder.dart';
-import 'package:rpljs/widgets/buttons.dart';
-import 'package:rpljs/widgets/flex-elements.dart';
 import 'package:rpljs/widgets/scaffold/page.dart';
-import 'package:rpljs/widgets/text-elements.dart';
+import 'package:rpljs/widgets/snacky.dart';
+import 'package:rpljs/widgets/txt.dart';
 
 typedef SnippetCallback = void Function(SnippetModel);
 
@@ -174,6 +175,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext rootContext) {
     final pageArgs = ModalRoute.of(rootContext).settings.arguments as SettingsPageArguments;
     final editItem = pageArgs?.editItem ?? "";
+    final snacky = Snacky.of(rootContext);
 
     return AppStateBuilder(
       builder: (context, appState, provider) => scaffoldPage(
@@ -191,7 +193,10 @@ class _SettingsPageState extends State<SettingsPage> {
                     => _editSnippet(
                           snippet,
                           overrideEditing: editItem == snippet.uuid,
-                          onSave: (sn) => provider.editSnippet(sn),
+                          onSave: (sn) {
+                            provider.editSnippet(sn);
+                            snacky.showInfo("Snippet saved.");
+                          },
                           onDelete: (sn) => showDialog(
                             context: context,
                             builder: confirmDialogBuilder(
@@ -201,7 +206,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 "the snippet labeled '${sn.label}'?"
                               ],
                               onConfirm: () => provider.deleteSnippet(sn),
-                              onCancel: () => print(sn)
+                              onCancel: () => null
                             )
                           )
                       )
@@ -228,7 +233,18 @@ class _SettingsPageState extends State<SettingsPage> {
                       subtitle: Txt.p(h.timestamp.toIso8601String()),
                       trailing: btnIcon(
                         icon: Icons.delete_forever,
-                        onPressed: () => provider.deleteHistory(h),
+                        onPressed: () {
+                          final copy = h.clone();
+                          provider.deleteHistory(h);
+                          snacky.showAction(
+                            "History item deleted.",
+                            actionLabel: "Undo",
+                            onAction: () {
+                              provider.editHistory(copy);
+                              setState((){});
+                            }
+                          );
+                        },
                       ),
                     );
                   })

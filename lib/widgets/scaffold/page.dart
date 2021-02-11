@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+
 import 'package:rpljs/config/constants.dart';
-import 'package:rpljs/theme/size-helpers.dart';
+
+import 'package:rpljs/helpers/size-helpers.dart';
+
 import 'package:rpljs/views/base/page-arguments.dart';
+
 import 'package:rpljs/widgets/scaffold/app-bar.dart';
 import 'package:rpljs/widgets/scaffold/drawer.dart';
 
@@ -11,7 +15,8 @@ Scaffold scaffoldPage({
   bool drawer = true
 }) {
   final arguments = PageArguments.of(context);
-  
+  final viewportSize = MediaQuery.of(context).size;
+  final appBar = scaffoldAppBar(context, arguments);
   return Scaffold(
     backgroundColor: Constants.theme.background,
     appBar:
@@ -24,8 +29,15 @@ Scaffold scaffoldPage({
       top: true,
       right: true,
       bottom: true,
-      minimum: padding(horizontal: 2.0, vertical: 3.0),
-      child: builder.call(context, arguments)
+      minimum: padding(horizontal: 0, vertical: 0),
+      child: Container(
+        width: viewportSize.width,
+        height: viewportSize.height - appBar.preferredSize.height,
+        decoration: BoxDecoration(
+          gradient: Constants.theme.backgroundGradient
+        ),
+        child: builder.call(context, arguments)
+      ),
     ),
   );
 }

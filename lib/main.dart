@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:rpljs/config/constants.dart';
-import 'package:rpljs/config/routes.dart';
-import 'package:rpljs/state/app-state-provider.dart';
+import 'package:rpljs/config/index.dart';
+import 'package:rpljs/services/app-state.dart';
 
 Future<void> main() async {
   await AppStateProvider.init();

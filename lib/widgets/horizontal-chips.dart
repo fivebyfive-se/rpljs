@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:rpljs/theme/text-style-helpers.dart';
+
+import 'package:rpljs/helpers/text-style-helpers.dart';
 
 typedef ChipCallback<T> = void Function(T);
 typedef ConvertCallback<T> = String Function(T);
@@ -51,7 +52,7 @@ class _HorizontalChipsState<T> extends State<HorizontalChips<T>> {
             ),
             tooltip: widget.tooltipConverter == null ? null 
               : widget.tooltipConverter(item),
-              
+
             onPressed: widget.onPressed == null 
               ? null : () => widget.onPressed.call(item),
 

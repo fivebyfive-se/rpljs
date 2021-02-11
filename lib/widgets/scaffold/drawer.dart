@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
-import 'package:rpljs/views/base/page-navigator.dart';
-import 'package:rpljs/views/start-page.dart';
-import 'package:rpljs/widgets/rpljs-logo.dart';
-import 'package:rpljs/widgets/text-elements.dart';
-
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:rpljs/config/constants.dart';
-import 'package:rpljs/theme/text-style-helpers.dart';
+
+import 'package:rpljs/helpers/text-style-helpers.dart';
+
 import 'package:rpljs/views/base/page-arguments.dart';
 import 'package:rpljs/views/settings-page.dart';
+import 'package:rpljs/widgets/rpljs-logo.dart';
+import 'package:rpljs/widgets/txt.dart';
 
 Drawer scaffoldDrawer<T extends PageArguments>(
   BuildContext context,

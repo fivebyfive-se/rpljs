@@ -1,4 +1,4 @@
-import 'package:rpljs/theme/rpljs-theme.dart';
+import 'package:rpljs/config/rpljs-theme.dart';
 
 class Constants {
   static const appTitle = 'Rpljs';
@@ -16,4 +16,40 @@ class Constants {
   static const iconSizeLarge  = 23.0;
 
   static const sizeBase       = 9.0;
+
+  static List<String> javascriptKeywords = [
+'break',
+'case',
+'catch',
+'class',
+'const',
+'continue',
+'debugger',
+'default',
+'delete',
+'do',
+'else',
+'export',
+'extends',
+'finally',
+'for',
+'function',
+'if',
+'import',
+'in',
+'instanceof',
+'new',
+'return',
+'super',
+'switch',
+'this',
+'throw',
+'try',
+'typeof',
+'var',
+'void',
+'while',
+'with',
+'yield',
+  ];
 }

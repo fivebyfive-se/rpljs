@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:rpljs/config/constants.dart';
-import 'package:rpljs/theme/size-helpers.dart';
-import 'package:rpljs/widgets/text-elements.dart';
+import 'package:rpljs/config/index.dart' show Constants;
+import 'package:rpljs/helpers/size-helpers.dart';
+
+import 'package:rpljs/widgets/txt.dart';
 
 Widget btnLabel({
   String label,

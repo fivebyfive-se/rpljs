@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+
 import 'package:rpljs/config/constants.dart';
-import 'package:rpljs/theme/size-helpers.dart';
+
+import 'package:rpljs/helpers/buttons.dart';
+import 'package:rpljs/helpers/size-helpers.dart';
+import 'package:rpljs/widgets/txt.dart';
+
 import 'package:rpljs/widgets/builders/confirm-dialog-builder.dart';
-import 'package:rpljs/widgets/buttons.dart';
-import 'package:rpljs/widgets/text-elements.dart';
 
 class ListDialogButton<T> extends StatelessWidget {
   ListDialogButton({

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rpljs/theme/text-style-helpers.dart';
+import 'package:rpljs/helpers/text-style-helpers.dart';
 
 class Txt extends StatelessWidget {
   Txt({this.text, this.type, TextStyle style, List<TxtType> extraTypes})

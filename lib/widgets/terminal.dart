@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:rpljs/config/constants.dart';
-import 'package:rpljs/services/models/log-item.dart';
-import 'package:rpljs/theme/size-helpers.dart';
+
+import 'package:rpljs/config/index.dart';
+import 'package:rpljs/helpers/index.dart';
+
+import 'package:rpljs/models/log-item.dart';
 
 class Terminal extends StatelessWidget {
   Terminal({this.stream, this.initialData, this.style});
@@ -22,7 +24,7 @@ class Terminal extends StatelessWidget {
       builder: (context, snapshot)
         => Container(
           width: viewportSize.width,
-          padding: padding(),
+          padding: padding(horizontal: 2, vertical: 1),
           decoration: BoxDecoration(
             gradient: Constants.theme.terminalGradient,
             border: BorderDirectional(

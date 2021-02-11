@@ -4,6 +4,9 @@ final whitespaceRex = RegExp(r'^\s+$');
 extension StringExtensions on String {
   bool isWhitespace() => whitespaceRex.hasMatch(this);
 
+  bool isFalsy() => this == null || this == "" || this.isWhitespace();
+  bool isTruthy() => !this.isFalsy();
+
   String append(String suffix)  => this + suffix;
   String prepend(String prefix) => prefix + this;
 

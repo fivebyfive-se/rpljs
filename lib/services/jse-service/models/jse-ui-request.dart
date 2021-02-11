@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:rpljs/services/models/log-item.dart';
+import 'package:rpljs/models/log-item.dart';
 
 abstract class JseUiRequest {}
 

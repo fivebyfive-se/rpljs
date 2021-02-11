@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:rpljs/config/constants.dart';
+import 'package:rpljs/config/index.dart' show Constants;
 
 TextStyle textColor(Color color)
   => TextStyle(color: color);

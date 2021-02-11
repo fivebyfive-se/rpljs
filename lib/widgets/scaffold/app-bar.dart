@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rpljs/config/constants.dart';
-import 'package:rpljs/theme/text-style-helpers.dart';
+import 'package:rpljs/helpers/text-style-helpers.dart';
 import 'package:rpljs/views/base/page-arguments.dart';
 
 AppBar scaffoldAppBar(

@@ -2,32 +2,27 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
-import 'package:rpljs/config/constants.dart';
+
+import 'package:rpljs/config/index.dart';
+
+import 'package:rpljs/helpers/index.dart';
+
+import 'package:rpljs/services/app-state.dart';
 import 'package:rpljs/services/jse-service.dart';
-import 'package:rpljs/services/models/jse-exception.dart';
-import 'package:rpljs/services/models/jse-parse-result.dart';
-import 'package:rpljs/services/models/jse-state.dart';
-import 'package:rpljs/services/models/jse-ui-request.dart';
-import 'package:rpljs/services/models/jse-variable.dart';
-import 'package:rpljs/services/models/log-item.dart';
 import 'package:rpljs/services/terminal-controller-service.dart';
-import 'package:rpljs/state/models/input-history-model.dart';
-import 'package:rpljs/state/models/snippet-model.dart';
-import 'package:rpljs/theme/size-helpers.dart';
-import 'package:rpljs/theme/text-style-helpers.dart';
-import 'package:rpljs/views/base/page-arguments.dart';
-import 'package:rpljs/views/base/page-base.dart';
-import 'package:rpljs/views/base/page-navigator.dart';
+
+import 'package:rpljs/views/base/index.dart';
 import 'package:rpljs/views/settings-page.dart';
+
 import 'package:rpljs/widgets/builders/app-state-builder.dart';
-import 'package:rpljs/widgets/buttons.dart';
-import 'package:rpljs/widgets/flex-elements.dart';
+import 'package:rpljs/widgets/scaffold/page.dart';
+
 import 'package:rpljs/widgets/horizontal-chips.dart';
 import 'package:rpljs/widgets/list-dialog-button.dart';
 import 'package:rpljs/widgets/repl-input.dart';
-import 'package:rpljs/widgets/scaffold/page.dart';
 import 'package:rpljs/widgets/terminal.dart';
-import 'package:rpljs/widgets/text-elements.dart';
+import 'package:rpljs/widgets/txt.dart';
+
 
 class StartPage extends PageBase<StartPageArguments> {
   StartPage() : super(showDrawer: true);
@@ -56,10 +51,11 @@ class StartPage extends PageBase<StartPageArguments> {
 }
 
 class _StartPageState extends State<StartPage> {
-  final JseService  _jseService = JseService.getInstance();
+  final JseService  _jseService = JseServiceProvider.getInstance();
 
-  List<JseVariable> _jseVariables = [];
-  JseState          _jseState;
+  List<JseVariable>    _jseVariables = [];
+  List<JseBuiltinFunc> _jseBuiltins  = [];
+  JseState             _jseState;
 
   TerminalControllerService _terminalCtrl 
     = TerminalControllerService.getInstance();
@@ -88,6 +84,21 @@ class _StartPageState extends State<StartPage> {
     _jseVariables
       ..clear()
       ..addAll(variables);
+    setState(() {});
+  }
+
+  void _handleJseBuiltins(List<JseBuiltin> builtins) {
+    _jseBuiltins.clear();
+
+    builtins.forEach((b) { 
+      if (b is JseBuiltinObject) {
+        _jseBuiltins.addAll(b.funcs);
+      } else if (b is JseBuiltinFunc) {
+        _jseBuiltins.add(b);
+      }
+    });
+
+    setState(() {});
   }
 
   Future<void> _handleInput() async {
@@ -102,9 +113,12 @@ class _StartPageState extends State<StartPage> {
     if (_jseState == null) {
       _jseState = _jseService.currentState;
       _jseService.globals.listen(_handleJseVariables);
+      _jseService.builtins.listen(_handleJseBuiltins);
       _jseService.state.listen(_handleJseState);
       _jseService.uiRequests.listen(_handleJseUiRequest);
       _jseService.errors.listen(_handleJseError);
+
+      _jseService.init();
     }
   }
 
@@ -162,41 +176,64 @@ class _StartPageState extends State<StartPage> {
                   ]
                 )
               ),
-              flexp(1,
-                Row(children: [
-                  flexp(1,
-                    ListDialogButton<SnippetModel>(
-                      icon: LineAwesomeIcons.javascript__js_,
-                      dialogTitle: 'Snippets',
-                      itemBuilder: (context) => [
-                        ...appState.snippets.map((snippet) 
-                          => ListDialogItem<SnippetModel>(
-                            value: snippet,
-                            child: ListTile(
-                              title: Txt.h2(snippet.label),
-                              subtitle: Txt.p(snippet.content),
-                              trailing: btnIcon(
-                                icon: Icons.edit,
-                                color: Constants.theme.secondaryAccent,
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                  Navigator.of(context).pushNamed(
-                                    SettingsPage.routeName,
-                                    arguments: SettingsPageArguments(editItem: snippet.uuid)
-                                  );
-                                }
-                              ),
-                              onTap: () => _inputController.text = snippet.content
-                            )
-                          ))
-                      ],
+              
+              flexp(2,
+                Container(
+                  padding: padding(horizontal: 2, vertical: 4),
+                  margin: marginOnly(top: 2),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Constants.theme.inputBackground.withAlpha(0x00),
+                        Constants.theme.inputBackground.withAlpha(0x80)
+                      ]
                     )
                   ),
-                  flexp(23, ReplInputField(
-                    controller: _inputController,
-                    onSubmit: handleInput
-                  ))
-                ])
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                    flexp(1,
+                      ListDialogButton<SnippetModel>(
+                        icon: LineAwesomeIcons.javascript__js_,
+                        color: Constants.theme.foreground,
+                        dialogTitle: 'Snippets',
+                        tooltip: 'JS snippets',
+                        itemBuilder: (context) => [
+                          ...appState.snippets.map((snippet) 
+                            => ListDialogItem<SnippetModel>(
+                              value: snippet,
+                              child: ListTile(
+                                title: Txt.h2(snippet.label),
+                                subtitle: Txt.p(snippet.content),
+                                trailing: btnIcon(
+                                  icon: Icons.edit,
+                                  color: Constants.theme.secondaryAccent,
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    Navigator.of(context).pushNamed(
+                                      SettingsPage.routeName,
+                                      arguments: SettingsPageArguments(editItem: snippet.uuid)
+                                    );
+                                  }
+                                ),
+                                onTap: () => _inputController.text = snippet.content
+                              )
+                            ))
+                        ],
+                      )
+                    ),
+                    flexp(11, ReplInputField(
+                      controller: _inputController,
+                      onSubmit: handleInput,
+                      history: appState.history,
+                      variables: _jseVariables,
+                      builtins: _jseBuiltins
+                    ))
+                  ])
+                )
               )
             ],
           );

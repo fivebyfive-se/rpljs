@@ -42,6 +42,10 @@ class InputHistoryModel extends BaseModel {
 
   @override
   String toString() => content.truncate();
+
+  @override
+  InputHistoryModel clone() => InputHistoryModel
+    .fromAdapter(uuid, content, isFavourite, timestamp);
 }
 
 class InputHistoryAdapter extends TypeAdapter<InputHistoryModel> {

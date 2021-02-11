@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:rpljs/services/models/log-item.dart';
-import 'package:rpljs/widgets/terminal.dart';
+
+import 'package:rpljs/models/log-item.dart';
+import 'package:rpljs/widgets/terminal.dart' show TerminalChunk;
 
 class TerminalControllerService {
   final List<TerminalChunk> currentState = <TerminalChunk>[];

@@ -5,12 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import 'package:rpljs/extensions/iterable-extensions.dart';
+import 'package:rpljs/extensions/index.dart';
 
-import 'package:rpljs/state/app-state-model.dart';
-import 'package:rpljs/state/models/_base-model.dart';
-import 'package:rpljs/state/models/input-history-model.dart';
-import 'package:rpljs/state/models/snippet-model.dart';
+import './models/index.dart';
+import './app-state-model.dart';
+
 
 class AppStateProvider {
   /// Snapshot of last state update
@@ -38,6 +37,10 @@ class AppStateProvider {
   /// Add new item to input log
   void pushHistory(String content)
     => add<InputHistoryModel>(InputHistoryModel(content: content));
+
+  /// Edit history item
+  void editHistory(InputHistoryModel model)
+    => _edit<InputHistoryModel>(model);
 
   /// Delete item from input log
   void deleteHistory(InputHistoryModel model)

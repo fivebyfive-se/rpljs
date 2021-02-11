@@ -1,6 +1,6 @@
 import 'package:flutter/painting.dart';
-import 'package:rpljs/config/constants.dart';
-import 'package:rpljs/theme/rpljs-theme.dart';
+
+import 'package:rpljs/config/index.dart';
 
 enum LogLevel {
   info,
