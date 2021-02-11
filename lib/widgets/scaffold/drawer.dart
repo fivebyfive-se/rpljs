@@ -3,6 +3,7 @@ import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:rpljs/views/base/page-navigator.dart';
 import 'package:rpljs/views/start-page.dart';
 import 'package:rpljs/widgets/rpljs-logo.dart';
+import 'package:rpljs/widgets/text-elements.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
@@ -54,8 +55,8 @@ Drawer scaffoldDrawer<T extends PageArguments>(
           drawerUrlLinkTile(
             icon: LineAwesomeIcons.github,
             title: "Source code",
-            subtitle: "github.com/fivebyfive-se",
-            url: "https://github.com/fivebyfive-se/"
+            subtitle: "github.com/fivebyfive-se/rpljs",
+            url: "https://github.com/fivebyfive-se/rpljs"
           ),
         ],
       ),
@@ -104,9 +105,9 @@ Widget drawerLinkTile({
   Color color
 }) => ListTile(
     leading: Icon(icon, size: Constants.iconSizeXLarge, color: iconColor ?? color),
-    title: Text(title, style: textStyleTitle().copyWith(color: color)),
+    title: Txt.h2(title, style: textColor(color)),
     subtitle: subtitle == null  ? null 
-      : Text(subtitle, style: textStyleSubtitle().copyWith(color: color)),
+      : Txt.light(subtitle, style: textColor(color)),
     onTap: onTap
   );
 
@@ -115,18 +116,8 @@ Widget drawerSubheadingTile({String title, String subtitle, IconData icon, Color
   return ListTile(
     trailing: icon == null ? null
       : Icon(icon, size: Constants.iconSizeLarge, color: color ?? Constants.theme.primaryAccent),
-    title: Text(
-      title,
-      style: textStyleTitle().copyWith(
-        color: color ?? Constants.theme.primaryAccent
-      )),
+    title: Txt.h1(title, style: textColor(color ?? Constants.theme.primaryAccent)),
     subtitle: subtitle == null ? null 
-      : Text(
-          subtitle,
-          style: textStyleHeading()
-            .copyWith(
-              fontWeight: FontWeight.w300
-            )
-          ),
+      : Txt.light(subtitle),
   );
 }

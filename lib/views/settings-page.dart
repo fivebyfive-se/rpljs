@@ -10,6 +10,7 @@ import 'package:rpljs/views/base/page-navigator.dart';
 import 'package:rpljs/widgets/builders/app-state-builder.dart';
 import 'package:rpljs/widgets/builders/confirm-dialog-builder.dart';
 import 'package:rpljs/widgets/buttons.dart';
+import 'package:rpljs/widgets/flex-elements.dart';
 import 'package:rpljs/widgets/scaffold/page.dart';
 import 'package:rpljs/widgets/text-elements.dart';
 
@@ -28,45 +29,42 @@ class SettingsPage extends PageBase<SettingsPageArguments> {
 
 class _SettingsPageState extends State<SettingsPage> {
   Widget _sectionTitle(String title, {IconData icon}) 
-    => Expanded(
-      flex: 1,
-      child: Row(
+    => flexp(1, Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           icon == null 
-            ? Spacer(flex: 2) 
-            : Expanded(flex: 2, 
-                child: Icon(icon, color: Constants.theme.secondaryAccent)
+            ? spex(2) 
+            : flexp(2,
+                Icon(icon, color: Constants.theme.secondaryAccent)
               ),
-          Expanded(flex: 10,
-            child: Txt.h1(title,
-              style: TextStyle(
-                color: Constants.theme.secondaryAccent)
-              )
+          flexp(10,
+            Txt.h1(
+              title,
+              style: textColor(Constants.theme.secondaryAccent)
+            )
           )
         ],
       ),
     );
 
   Widget _sectionList({List<Widget> children, int flex = 6})
-    => Expanded(
-      flex: flex,
-      child: ListView(
-        children: children,
-      )
-    );
+    => flexp(flex, ListView(children: children));
 
-  final Map<String,bool> _editing = <String,bool>{};
+  Map<String,bool> _editing = <String,bool>{};
   
   bool _isEditing(String id)
     => _editing.containsKey(id) ? _editing[id] : false;
 
-  void _toggleEdit(String id) {
-    if (_editing.containsKey(id)) {
-      _editing[id] = !_editing[id];
+  void _toggleEdit(String id, {bool force}) {
+    if (force != null) {
+      _editing[id] = force;
     } else {
-      _editing[id] = true;
+      if (_editing.containsKey(id)) {
+        _editing[id] = !_editing[id];
+      } else {
+        _editing[id] = true;
+      }
     }
     setState(() {});
   }
@@ -77,22 +75,24 @@ class _SettingsPageState extends State<SettingsPage> {
     );
 
   Widget _editSnippet(SnippetModel snippet, {
+    bool overrideEditing,
     SnippetCallback onSave,
     SnippetCallback onDelete
   }) {
-    final isEditing = _isEditing(snippet.uuid);
+    final override = (overrideEditing ?? false) && !_editing.containsKey(snippet.uuid);
+    final isEditing = override || _isEditing(snippet.uuid);
     final labCtrl = _controller(snippet.label);
     final cntCtrl = _controller(snippet.content);
 
     final btn = (String label, {IconData icon, Color color, Function() onPressed})
-      => Expanded(flex: 1,
-        child: btnLabelIcon(
-          icon: icon,
-          backgroundColor: color ?? Constants.theme.primaryAccent,
-          label: label,
-          onPressed: onPressed,
-        )
-      );
+      => flexp(1,
+          btnLabelIcon(
+            icon: icon,
+            backgroundColor: color ?? Constants.theme.primaryAccent,
+            label: label,
+            onPressed: onPressed,
+          )
+        );
 
     return Container(
       height: 130,
@@ -100,8 +100,8 @@ class _SettingsPageState extends State<SettingsPage> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(flex: 1,
-            child: btnIcon(
+          flexp(1,
+            btnIcon(
               icon: snippet.runOnInit ? Icons.favorite : Icons.favorite_border,
               onPressed: () {
                 snippet.runOnInit = !snippet.runOnInit;
@@ -109,17 +109,17 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             )
           ),
-          Expanded(flex: 8,
-          child: isEditing ? Column(
+          flexp(8,
+          isEditing ? Column(
             children: [
-              Expanded(flex: 1,
-                child: TextField(
+              flexp(1,
+                TextField(
                   controller: labCtrl,
                   style: textStyleHeading()
                 )
               ),
-              Expanded(flex: 2,
-                child: TextField(
+              flexp(2,
+                TextField(
                   controller: cntCtrl,
                   maxLines: 2,
                   style: textStyleCode()
@@ -132,25 +132,25 @@ class _SettingsPageState extends State<SettingsPage> {
                 onTap: () => _toggleEdit(snippet.uuid)
               )
           ),
-          Expanded(flex: 2,
-            child: isEditing ? Column(
+          flexp(2,
+            isEditing ? Column(
               children: [
                 btn("Save", icon: Icons.save, onPressed: () {
                   snippet.label = labCtrl.text;
                   snippet.content = cntCtrl.text;
                   onSave?.call(snippet);
-                  _toggleEdit(snippet.uuid);
+                  _toggleEdit(snippet.uuid, force: false);
                 }),
-                Spacer(flex: 1),
+                spex(1),
                 btn("Cancel",
                   icon: Icons.cancel,
                   color: Constants.theme.secondaryAccent,
-                  onPressed: () => _toggleEdit(snippet.uuid)
+                  onPressed: () => _toggleEdit(snippet.uuid, force: false)
                 ),
               ],
             ) : Column(
               children: [
-                Spacer(flex: 2),
+                spex(2),
                 btn("Delete", 
                   color: Constants.theme.error,
                   icon: Icons.delete_forever, 
@@ -165,7 +165,16 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _editing = <String,bool>{};
+  }
+
+  @override
   Widget build(BuildContext rootContext) {
+    final pageArgs = ModalRoute.of(rootContext).settings.arguments as SettingsPageArguments;
+    final editItem = pageArgs?.editItem ?? "";
+
     return AppStateBuilder(
       builder: (context, appState, provider) => scaffoldPage(
         drawer: false,
@@ -181,6 +190,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ...appState.snippets.map((snippet) 
                     => _editSnippet(
                           snippet,
+                          overrideEditing: editItem == snippet.uuid,
                           onSave: (sn) => provider.editSnippet(sn),
                           onDelete: (sn) => showDialog(
                             context: context,
@@ -198,8 +208,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   ).toList()
                 ]
               ),
-              Expanded(flex: 1,
-                child: Center(
+              flexp(1,
+                Center(
                   child: btnLabelIcon(
                     icon: Icons.add,
                     backgroundColor: Constants.theme.primaryAccent,

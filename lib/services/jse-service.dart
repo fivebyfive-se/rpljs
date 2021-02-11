@@ -81,6 +81,7 @@ class JseService extends JseServiceBase {
       })();
     } catch (e) {
       _streamError(JseException(message: e.toString()));
+      _streamLogItem(LogItem.error(e.toString()));
 
       _streamState(JseState.Idle);
 
@@ -226,9 +227,13 @@ class JseService extends JseServiceBase {
 
   @protected
   void _streamOutput() {
-    _streamRequest(new JseUiRequestLog([..._log].toList()));
+    _streamRequest(JseUiRequestLog([..._log].toList()));
     _log.clear();
   }
+
+  @protected
+  void _streamLogItem(LogItem item) 
+    => _streamRequest(JseUiRequestLog([item].toList()));
 
   @protected
   void _streamError(JseException err) => _errors.add(err);

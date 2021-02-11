@@ -11,15 +11,23 @@ import 'package:rpljs/services/models/jse-ui-request.dart';
 import 'package:rpljs/services/models/jse-variable.dart';
 import 'package:rpljs/services/models/log-item.dart';
 import 'package:rpljs/services/terminal-controller-service.dart';
+import 'package:rpljs/state/models/input-history-model.dart';
+import 'package:rpljs/state/models/snippet-model.dart';
 import 'package:rpljs/theme/size-helpers.dart';
 import 'package:rpljs/theme/text-style-helpers.dart';
 import 'package:rpljs/views/base/page-arguments.dart';
 import 'package:rpljs/views/base/page-base.dart';
 import 'package:rpljs/views/base/page-navigator.dart';
+import 'package:rpljs/views/settings-page.dart';
 import 'package:rpljs/widgets/builders/app-state-builder.dart';
+import 'package:rpljs/widgets/buttons.dart';
+import 'package:rpljs/widgets/flex-elements.dart';
+import 'package:rpljs/widgets/horizontal-chips.dart';
+import 'package:rpljs/widgets/list-dialog-button.dart';
 import 'package:rpljs/widgets/repl-input.dart';
 import 'package:rpljs/widgets/scaffold/page.dart';
 import 'package:rpljs/widgets/terminal.dart';
+import 'package:rpljs/widgets/text-elements.dart';
 
 class StartPage extends PageBase<StartPageArguments> {
   StartPage() : super(showDrawer: true);
@@ -29,14 +37,15 @@ class StartPage extends PageBase<StartPageArguments> {
 
   final List<TerminalChunk> welcomeMessage = <TerminalChunk>[
     TerminalChunk.one("Welcome to Rpljs", color: Constants.theme.primaryAccent),
-    TerminalChunk.one(""),
     TerminalChunk(<String>[
-      "Please enter some JavaScript code ",
-      "in the input field below.",
-      "To output a value, use the command `log`:"
+"Please enter some JavaScript code in",
+"the input field below.  To output a ",
+"value, use the command `log`:"
     ]),
-    TerminalChunk.one("      log(123 + 321)",
-      color: Constants.theme.secondaryAccent)
+    TerminalChunk.one("    log(123 + 321)", 
+      color: Constants.theme.secondaryAccent),
+    TerminalChunk.one("To list all global variables, use:"),
+    TerminalChunk.one("    vardump()", color: Constants.theme.tertiaryAccent),
     
   ];
 
@@ -131,20 +140,63 @@ class _StartPageState extends State<StartPage> {
 
           return Column(
             children: [
-              Expanded(
-                flex: 6,
-                child: Terminal(
+              flexp(6,
+                Terminal(
                   stream: _terminalCtrl.stream,
                   initialData: _terminalCtrl.currentState,
                   style: textStyleCode(),
                 )
               ),
-              Expanded(
-                flex: 1,
-                child: ReplInputField(
-                  controller: _inputController,
-                  onSubmit: handleInput
-                ),
+              _jseVariables.isEmpty ? spex(1) : flexp(1,
+                Row(
+                  children: [
+                    flexp(2, Txt.h2("Vars:", extraTypes: [TxtType.code],)),
+                    flexp(22, HorizontalChips<JseVariable>(
+                      items: [..._jseVariables],
+                      labelConverter: (v) => v.toString(),
+                      tooltipConverter: (v) => "Insert ${v.name} in input field",
+                      onPressed: (v) => _inputController.insertText(v.name),
+                      backgroundColor: Constants.theme.varBackground,
+                      textColor: Constants.theme.varForeground,
+                    ))
+                  ]
+                )
+              ),
+              flexp(1,
+                Row(children: [
+                  flexp(1,
+                    ListDialogButton<SnippetModel>(
+                      icon: LineAwesomeIcons.javascript__js_,
+                      dialogTitle: 'Snippets',
+                      itemBuilder: (context) => [
+                        ...appState.snippets.map((snippet) 
+                          => ListDialogItem<SnippetModel>(
+                            value: snippet,
+                            child: ListTile(
+                              title: Txt.h2(snippet.label),
+                              subtitle: Txt.p(snippet.content),
+                              trailing: btnIcon(
+                                icon: Icons.edit,
+                                color: Constants.theme.secondaryAccent,
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  Navigator.of(context).pushNamed(
+                                    SettingsPage.routeName,
+                                    arguments: SettingsPageArguments(editItem: snippet.uuid)
+                                  );
+                                }
+                              ),
+                              onTap: () => _inputController.text = snippet.content
+                            )
+                          ))
+                      ],
+                    )
+                  ),
+                  flexp(23, ReplInputField(
+                    controller: _inputController,
+                    onSubmit: handleInput
+                  ))
+                ])
               )
             ],
           );

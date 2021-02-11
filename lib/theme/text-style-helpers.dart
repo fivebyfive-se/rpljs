@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:rpljs/config/constants.dart';
 
+TextStyle textColor(Color color)
+  => TextStyle(color: color);
 
 TextStyle textStyleBody() 
   => TextStyle(

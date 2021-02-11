@@ -56,7 +56,7 @@ class TerminalChunk {
     : lines = [line];
 
   TerminalChunk.fromLogItem(LogItem logItem)
-    : lines = [logItem.text],
+    : lines = [logItem.toString()],
       color = logLevelToColor(logItem.level);
 
   TerminalChunk(this.lines, {this.color});

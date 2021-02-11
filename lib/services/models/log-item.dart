@@ -37,7 +37,7 @@ class LogItem {
 
   @override
   String toString()
-    => level == LogLevel.trace 
+    => level == LogLevel.trace || level == LogLevel.error
       ? "[${timestamp.toIso8601String()}] $text"
       : text;
 }
