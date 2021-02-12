@@ -10,6 +10,13 @@ abstract class JseUiTypedRequest<T> extends JseUiRequest {
   final T _payload;
 } 
 
+class JseUiRequestEcho extends JseUiTypedRequest<List<String>> {
+  JseUiRequestEcho(List<String> lines)
+    : super(payload: lines);
+    
+  List<String> get lines => _payload;
+}
+
 class JseUiRequestClear extends JseUiRequest {}
 
 class JseUiRequestLog extends JseUiTypedRequest<List<LogItem>> {

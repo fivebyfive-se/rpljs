@@ -14,7 +14,8 @@ TextStyle textStyleBody()
 
 TextStyle textStyleCode()
   => textStyleBody().copyWith(
-    fontFamily: Constants.fontMono
+    fontFamily: Constants.fontMono,
+    letterSpacing: 0.1
   );
 
 TextStyle textStyleHeading()

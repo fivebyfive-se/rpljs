@@ -132,45 +132,45 @@ class RpljsTheme {
   static RpljsTheme get defaultDark 
     => RpljsTheme(
       brightness: Brightness.dark,
-      background: RpljsColors.darkGrey,
-      foreground: RpljsColors.whiteish,
+      background: Constants.colors.darkGrey,
+      foreground: Constants.colors.whiteish,
       backgroundGradient: LinearGradient(
-        colors: [RpljsColors.darkGrey, RpljsColors.darkPink],
+        colors: [Constants.colors.darkGrey, Constants.colors.darkPink],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight
       ),
-      primaryAccent: RpljsColors.pink,
-      secondaryAccent: RpljsColors.blue,
-      tertiaryAccent: RpljsColors.green,
+      primaryAccent: Constants.colors.pink,
+      secondaryAccent: Constants.colors.blue,
+      tertiaryAccent: Constants.colors.green,
 
-      error: RpljsColors.red,
-      warning: RpljsColors.orange,
+      error: Constants.colors.red,
+      warning: Constants.colors.orange,
 
-      cardBackground: RpljsColors.darkPink,
+      cardBackground: Constants.colors.darkPink,
 
-      appBarBackground: RpljsColors.purple,
-      appBarForeground: RpljsColors.whiteish,
+      appBarBackground: Constants.colors.purple,
+      appBarForeground: Constants.colors.whiteish,
 
       terminalGradient: LinearGradient(
         colors: [
-          RpljsColors.blackish,
-          RpljsColors.blackish.withAlpha(0x20),
+          Constants.colors.blackish,
+          Constants.colors.blackish.withAlpha(0x20),
         ],
         begin: Alignment.bottomCenter,
         end: Alignment.topCenter
       ),
-      terminalText: RpljsColors.whiteish,
-      terminalBorder: RpljsColors.grey,
+      terminalText: Constants.colors.whiteish,
+      terminalBorder: Constants.colors.grey,
 
-      historyBackground: RpljsColors.blackish,
-      historyForeground: RpljsColors.orange,
+      historyBackground: Constants.colors.grey.withAlpha(0x80),
+      historyForeground: Constants.colors.lightGrey,
 
-      varBackground: RpljsColors.grey.withAlpha(0x80),
-      varForeground: RpljsColors.lightPink,
+      varBackground: Constants.colors.grey.withAlpha(0x80),
+      varForeground: Constants.colors.lightPink,
 
-      inputBackground: RpljsColors.blackish,
-      inputText: RpljsColors.whiteish,
-      inputAccent: RpljsColors.lightPink
+      inputBackground: Constants.colors.blackish,
+      inputText: Constants.colors.whiteish,
+      inputAccent: Constants.colors.lightPink
 
     );
 }
@@ -182,6 +182,7 @@ class RpljsColors {
     'dark_grey': '#1F171F',
     'dark_pink': '#332633',
     'grey': '#474759',
+    'light_grey': '#8585A6',
     'whiteish': '#F4FFF2',
     'pink': '#B312B3',
     'red': '#B31212',
@@ -191,22 +192,23 @@ class RpljsColors {
     'blue': '#33BBFF',
     'purple': '#9933FF',
     'light_pink': '#FF33FF',
-    'pale_pink': '#BF26BF'
+    'pale_pink': '#DA75FF'
   };
 
-  static Color get blackish  => hexToColor(_hexColors['blackish']);
-  static Color get darkGrey  => hexToColor(_hexColors['dark_grey']);
-  static Color get darkPink  => hexToColor(_hexColors['dark_pink']);
-  static Color get grey      => hexToColor(_hexColors['grey']);
-  static Color get whiteish  => hexToColor(_hexColors['whiteish']);
-  static Color get pink      => hexToColor(_hexColors['pink']);
-  static Color get red       => hexToColor(_hexColors['red']);
-  static Color get orange    => hexToColor(_hexColors['orange']);
-  static Color get yellow    => hexToColor(_hexColors['yellow']);
-  static Color get green     => hexToColor(_hexColors['green']);
-  static Color get blue      => hexToColor(_hexColors['blue']);
-  static Color get purple    => hexToColor(_hexColors['purple']);
-  static Color get lightPink => hexToColor(_hexColors['light_pink']);
-  static Color get palePink  => hexToColor(_hexColors['pale_pink']);
+  Color get blackish  => hexToColor(_hexColors['blackish']);
+  Color get darkGrey  => hexToColor(_hexColors['dark_grey']);
+  Color get darkPink  => hexToColor(_hexColors['dark_pink']);
+  Color get grey      => hexToColor(_hexColors['grey']);
+  Color get lightGrey => hexToColor(_hexColors['light_grey']);
+  Color get whiteish  => hexToColor(_hexColors['whiteish']);
+  Color get pink      => hexToColor(_hexColors['pink']);
+  Color get red       => hexToColor(_hexColors['red']);
+  Color get orange    => hexToColor(_hexColors['orange']);
+  Color get yellow    => hexToColor(_hexColors['yellow']);
+  Color get green     => hexToColor(_hexColors['green']);
+  Color get blue      => hexToColor(_hexColors['blue']);
+  Color get purple    => hexToColor(_hexColors['purple']);
+  Color get lightPink => hexToColor(_hexColors['light_pink']);
+  Color get palePink  => hexToColor(_hexColors['pale_pink']);
 }
 

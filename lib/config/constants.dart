@@ -4,12 +4,13 @@ class Constants {
   static const appTitle = 'Rpljs';
 
   static RpljsTheme theme = RpljsTheme.defaultDark;
+  static RpljsColors colors = RpljsColors();
 
   static const fontMono = 'SpaceMono';
   static const fontSans = 'SpaceGrotesk';
-  static const fontSizeBase   = 18.0;
-  static const fontSizeSmall  = 14.0;
-  static const fontSizeLarge  = 22.5;
+  static const fontSizeBase   = 20.0;
+  static const fontSizeSmall  = 16.0;
+  static const fontSizeLarge  = 23.0;
   static const fontSizeXLarge = 27.0;
 
   static const iconSizeXLarge = 32.0;

@@ -8,11 +8,12 @@ import 'package:rpljs/helpers/index.dart';
 import 'package:rpljs/models/log-item.dart';
 
 class Terminal extends StatelessWidget {
-  Terminal({this.stream, this.initialData, this.style});
+  Terminal({this.controller, this.initialData, this.stream, this.style});
 
   final Stream<List<TerminalChunk>> stream;
   final List<TerminalChunk> initialData;
   final TextStyle style;
+  final ScrollController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -35,13 +36,25 @@ class Terminal extends StatelessWidget {
             )
           ),
           child: ListView(
+            controller: controller,
             children: <Widget>[
               ...snapshot.data.map(
                 (span) => RichText(
                   text: TextSpan(
                     children: span.lines
                       .map((l) => l.trimRight())
-                      .map((l) => TextSpan(text: "$l\n")).toList(),
+                      .map((l) => TextSpan(
+                        text: l.replaceFirst('#','') + "\n",
+                        style: l.trim().startsWith('#') 
+                          ? style
+                              .copyWith(
+                                inherit: true,
+                                fontWeight: FontWeight.bold,
+                                fontSize: Constants.fontSizeLarge,
+                                color: span.color ?? null
+                              )
+                          : null
+                      )).toList(),
                     style: span.color == null 
                         ? style
                         : style.copyWith(color: span.color),

@@ -51,7 +51,7 @@ Color logLevelToColor(LogLevel level) {
     case LogLevel.debug:
       return Constants.theme.secondaryAccent;
     case LogLevel.warn:
-      return RpljsColors.orange;
+      return Constants.colors.orange;
     case LogLevel.error:
     default:
       return Constants.theme.error;      

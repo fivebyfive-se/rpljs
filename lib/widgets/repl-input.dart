@@ -52,95 +52,60 @@ class _ReplInputFieldState extends State<ReplInputField> {
     if (pattern.isFalsy()) {
       return [];
     }
-    final lastWord = pattern.split(RegExp(r'\b')).last;
+    final m = (a, b) => b.endsWith(a) || a.startsWith(b);
+
     return [
-      ..._vars.where((v) => v.name.startsWith(lastWord)).toList(),
-      ..._builtins.where((b) => b.name.startsWith(lastWord)).toList(),
-      ..._keywords.where((k) => k.startsWith(lastWord)).toList(),
-      ..._history.where((v) => v.content.startsWith(pattern)).toList()
-    ].take(7).toList();
+      ..._vars.where((v) => m(v.name, pattern))
+            .map((v) => ReplSuggestion.variable(pattern, v))
+            .toList(),
+      ..._builtins.where((b) => m(b.name, pattern))
+            .map((b) => ReplSuggestion.builtin(pattern, b))
+            .toList(),
+      ..._keywords.where((k) => m(k, pattern))
+            .map((k) => ReplSuggestion.keyword(pattern, k))
+            .toList(),
+      ..._history.where((h) => m(h.content, pattern))
+            .map((h) => ReplSuggestion.history(pattern, h))
+            .toList()
+    ].take(8).toList();
   }
 
-  Widget _suggestionTile({
-    String left,
-    String right,
-    String subtitle,
-    IconData icon,
-    Color iconColor
-  })
 
-    => ListTile(
+  Widget _suggestionItemBuilder(BuildContext context, dynamic sugg) {
+    final suggestion = sugg as ReplSuggestion;
+    final around = suggestion.suggestion.split(suggestion.pattern);
+    final left = around.first;
+    final right = around.last;
+    final ts = textStyleCode().copyWith(
+      fontSize: Constants.fontSizeLarge,
+      color: suggestion.color);
+    final ss = textStyleBody().copyWith(
+      fontSize: Constants.fontSizeBase,
+      fontWeight: FontWeight.w300,
+      color: suggestion.color);
+
+    return ListTile(
       title: RichText(
         text: TextSpan(children: [
-          TextSpan(text: left, style: textStyleCode().copyWith(fontWeight: FontWeight.bold)),
-          TextSpan(text: right, style: textStyleCode())
+          TextSpan(text: left, style: ts),
+          TextSpan(
+            text: suggestion.pattern, 
+            style: ts.copyWith(fontWeight: FontWeight.bold)
+          ),
+          TextSpan(text: right, style: ts)
         ])
       ),
-      subtitle: Txt.p(subtitle),
-      leading: Icon(icon, color: iconColor)
-    );
-
-  Widget _suggestionItemBuilder(BuildContext context, dynamic suggestion) {
-    final left = widget.controller.text.split(RegExp(r'\b')).last;
-    String sugg = "";
-    String subtitle = "";
-    IconData icon;
-    Color color;
-
-    if (suggestion is InputHistoryModel) {
-      sugg = suggestion.content; 
-      subtitle = "Input history @${suggestion.timestamp.toIso8601String()}";
-      icon = Icons.history;
-      color = Constants.theme.historyForeground;
-    } else if (suggestion is JseVariable) {
-      sugg = suggestion.name;
-      subtitle = "Global variable (${suggestion.displayString})";
-      icon = LineAwesomeIcons.code;
-      color = Constants.theme.varForeground;
-    } else if (suggestion is JseBuiltin) {
-      sugg = suggestion.name;
-      subtitle = suggestion.doc;
-      icon = LineAwesomeIcons.javascript__js__square;
-      color = Constants.theme.varForeground.brighten(amt: 0.3);
-    } else if (suggestion is String) {
-      sugg = suggestion;
-      subtitle = "JavaScript keyword";
-      icon = LineAwesomeIcons.javascript__js_;
-      color = Constants.theme.secondaryAccent;
-    }
-    final right = sugg.replaceFirst(left, "");
-    return _suggestionTile(
-      left: left,
-      right: right,
-      icon: icon,
-      subtitle: subtitle,
-      iconColor: color
+      subtitle: Txt.p(suggestion.description, style: ss),
+      leading: Icon(suggestion.icon, color: suggestion.color)
     );
   }
 
-  void _onSuggestionSelected(dynamic suggestion) {
-    if (suggestion is InputHistoryModel) {
-      _ctrl.text = suggestion.content;
-    } else if (suggestion is JseBuiltinFunc) {
-      final words = _ctrl.text.split(RegExp(r'\b'));
-      final lastWord = words.removeLast();
-      final suggestedWord = suggestion.name + "()";
-
-      print("$lastWord => $suggestedWord");
-      _ctrl.text = [...words, suggestedWord].join('');
-      _ctrl.setCursor(
-        position: _ctrl.text.length - (suggestion.numArgs == 0 ? 0 : 1)
-      );
-    } else {
-      final words = _ctrl.text.split(RegExp(r'\b'));
-      final lastWord = words.removeLast();
-      final suggestedWord = (suggestion is JseVariable) 
-        ? suggestion.name : suggestion;
-
-      print("$lastWord => $suggestedWord");
-
-      _ctrl.text = [...words, suggestedWord].join('');
-    }
+  void _onSuggestionSelected(dynamic sugg) {
+    final suggestion = sugg as ReplSuggestion;
+    _ctrl.text = _ctrl.text.replaceFirst(
+      suggestion.pattern,
+      suggestion.suggestion
+    );
     _ctrl.requestFocus();
     _suggestionsCloseIfEmpty(closeAnyway: true);
 
@@ -180,11 +145,11 @@ class _ReplInputFieldState extends State<ReplInputField> {
 
     return TypeAheadField(
       direction: AxisDirection.up,
-      suggestionsCallback:  _getSuggestions,
-      itemBuilder:          _suggestionItemBuilder,
-      onSuggestionSelected: _onSuggestionSelected,
+      itemBuilder:              _suggestionItemBuilder,
+      onSuggestionSelected:     _onSuggestionSelected,
       suggestionsBoxController: _suggestionsCtrl,
-      noItemsFoundBuilder: (ctx) => null,
+      suggestionsCallback:      _getSuggestions,
+      noItemsFoundBuilder: (_) => null,
 
       textFieldConfiguration: TextFieldConfiguration(
         autofocus: true,
@@ -206,6 +171,70 @@ class _ReplInputFieldState extends State<ReplInputField> {
         ),
       ),
     );
+  }
+}
+
+enum SuggestionSource {
+  history,
+  variable,
+  builtin,
+  keyword
+}
+
+class ReplSuggestion {
+  ReplSuggestion(this.source, this.pattern, this.suggestion, this.description);
+
+  ReplSuggestion.history(this.pattern, InputHistoryModel model)
+    : suggestion = model.content,
+      description = model.timestamp.toIso8601String(),
+      source = SuggestionSource.history;
+
+  ReplSuggestion.variable(this.pattern, JseVariable model)
+    : suggestion = model.name,
+      description = "Global variable (${model.displayString})",
+      source = SuggestionSource.variable;
+
+  ReplSuggestion.builtin(this.pattern, JseBuiltinFunc model)
+    : suggestion = model.name + "()",
+      description = model.doc,
+      source = SuggestionSource.builtin;
+  
+  ReplSuggestion.keyword(this.pattern, this.suggestion)
+    : description = 'JavaScript keyword',
+      source = SuggestionSource.keyword;
+
+  final SuggestionSource source;
+  final String pattern;
+  final String suggestion;
+  final String description;
+
+  Color get color {
+    final t = Constants.theme;
+    switch (source) {
+      case SuggestionSource.builtin:
+        return Constants.colors.palePink;
+      case SuggestionSource.variable:
+        return t.varForeground;
+      case SuggestionSource.history:
+        return t.historyForeground;
+      case SuggestionSource.builtin:
+      default:
+        return t.secondaryAccent;
+    }
+  }
+
+  IconData get icon {
+    switch (source) {
+      case SuggestionSource.builtin:
+        return LineAwesomeIcons.code;
+      case SuggestionSource.variable:
+        return Icons.code;
+      case SuggestionSource.history:
+        return Icons.history_rounded;
+      case SuggestionSource.builtin:
+      default:
+        return LineAwesomeIcons.javascript__js_;
+    }
   }
 }
 

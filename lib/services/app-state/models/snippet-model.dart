@@ -45,6 +45,11 @@ class SnippetModel extends BaseModel {
   @override
   String toString() => content.truncate();
 
+  String toJavaScript() => [
+    "// snippet: $label",
+    content.trim()
+  ].join("\n");
+
   @override
   SnippetModel clone() => SnippetModel
     .fromAdapter(uuid, label, content, runOnInit);

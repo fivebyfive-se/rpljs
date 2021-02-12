@@ -87,7 +87,7 @@ class AppStateProvider {
   AppState _loadState() => AppState(
     history: Hive.box<InputHistoryModel>(historyBox)
             .values
-            .order((a,b) => b.compareTo(a))
+            .order((a,b) => a.compareTo(b))
             .map((h) => h as InputHistoryModel)
             .toList(),
     snippets: Hive.box<SnippetModel>(snippetsBox)

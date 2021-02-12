@@ -31,7 +31,7 @@ class StartPage extends PageBase<StartPageArguments> {
   static const String title = 'Start';
 
   final List<TerminalChunk> welcomeMessage = <TerminalChunk>[
-    TerminalChunk.one("Welcome to Rpljs", color: Constants.theme.primaryAccent),
+    TerminalChunk.one("#Welcome to Rpljs", color: Constants.theme.primaryAccent),
     TerminalChunk(<String>[
 "Please enter some JavaScript code in",
 "the input field below.  To output a ",
@@ -61,33 +61,36 @@ class _StartPageState extends State<StartPage> {
     = TerminalControllerService.getInstance();
 
   ReplInputController _inputController;
+  ScrollController _termScrollController;
 
-
-  void _handleJseError(JseException error) {
+  void _jseErrorHandler(JseException error) {
     print(error);
   }
 
   /// Translates requests between JseService and Terminal
-  void _handleJseUiRequest(JseUiRequest request) {
+  void _jseUiRequestHandler(JseUiRequest request) {
     if (request is JseUiRequestLog) {
       _terminalCtrl.print(
         request.items.map((li) => TerminalChunk.fromLogItem(li)).toList()
       );
+    } else if (request is JseUiRequestEcho) {
+      _terminalCtrl.echo(request.lines);
     } else if (request is JseUiRequestClear) {
       _terminalCtrl.clear();
     }
+    _terminalUpdateScroll();
   }
 
-  void _handleJseState(JseState nextState) => _jseState = nextState;
+  void _jseStateHandler(JseState nextState) => _jseState = nextState;
 
-  void _handleJseVariables(List<JseVariable> variables) {
+  void _jseVariablesHandler(List<JseVariable> variables) {
     _jseVariables
       ..clear()
       ..addAll(variables);
     setState(() {});
   }
 
-  void _handleJseBuiltins(List<JseBuiltin> builtins) {
+  void _jseBuiltinsHandler(List<JseBuiltin> builtins) {
     _jseBuiltins.clear();
 
     builtins.forEach((b) { 
@@ -101,41 +104,55 @@ class _StartPageState extends State<StartPage> {
     setState(() {});
   }
 
-  Future<void> _handleInput() async {
-    _initJseService();
+  void _jseServiceInit() {
+    if (_jseState == null) {
+      _jseState = _jseService.currentState;
+      _jseService.globals.listen(_jseVariablesHandler);
+      _jseService.builtins.listen(_jseBuiltinsHandler);
+      _jseService.state.listen(_jseStateHandler);
+      _jseService.uiRequests.listen(_jseUiRequestHandler);
+      _jseService.errors.listen(_jseErrorHandler);
+    }
+    _jseService.init();
+  }
 
-    await _jseService.parseJs(_inputController.text);
+  Future<void> _jseParse(String code) async {
+    await _jseService.parseJs(code);
+  }
+
+  Future<void> _inputHandler() async {
+    await _jseParse(_inputController.text);
     _inputController.text = "";
   }
 
-
-  void _initJseService() {
-    if (_jseState == null) {
-      _jseState = _jseService.currentState;
-      _jseService.globals.listen(_handleJseVariables);
-      _jseService.builtins.listen(_handleJseBuiltins);
-      _jseService.state.listen(_handleJseState);
-      _jseService.uiRequests.listen(_handleJseUiRequest);
-      _jseService.errors.listen(_handleJseError);
-
-      _jseService.init();
-    }
-  }
-
-  void _initInput() {
+  void _inputInit() {
     _inputController = ReplInputController();
   }
 
-  void _printWelcomeMessage()
-    => _terminalCtrl.print(widget.welcomeMessage);
+  void _terminalInit() {
+    _termScrollController = ScrollController();
+    _terminalCtrl.print(widget.welcomeMessage);
+  }
+
+  void _terminalUpdateScroll() {
+    Future.delayed(
+      Duration(milliseconds: 200),
+      () => _termScrollController.animateTo(
+        _termScrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 400),
+        curve: Curves.easeInOut
+      )
+    );
+  }
+
 
   @override
   void initState() {
     super.initState();
     
-    _initJseService();
-    _initInput();
-    _printWelcomeMessage();
+    _jseServiceInit();
+    _inputInit();
+    _terminalInit();
   }
 
   @override
@@ -150,15 +167,16 @@ class _StartPageState extends State<StartPage> {
             if (_inputController.text != "") {
               appStateProvider.pushHistory(_inputController.text);
             }
-            _handleInput();
+            _inputHandler();
           };
 
           return Column(
             children: [
               flexp(6,
                 Terminal(
-                  stream: _terminalCtrl.stream,
+                  controller: _termScrollController,
                   initialData: _terminalCtrl.currentState,
+                  stream: _terminalCtrl.stream,
                   style: textStyleCode(),
                 )
               ),
@@ -220,7 +238,10 @@ class _StartPageState extends State<StartPage> {
                                     );
                                   }
                                 ),
-                                onTap: () => _inputController.text = snippet.content
+                                onTap: () {
+                                  _jseParse(snippet.toJavaScript());
+                                  Navigator.of(context).pop();
+                                }
                               )
                             ))
                         ],

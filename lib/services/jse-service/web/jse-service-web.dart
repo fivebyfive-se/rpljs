@@ -86,6 +86,11 @@ class JseServiceWeb extends JseService {
     try {
       _streamState(JseState.Parsing);
       await (() async {
+        _streamRequest(JseUiRequestEcho([
+          '//' + DateTime.now().toIso8601String(),
+          ...js.split("\n")
+        ]));
+
         final prog = parsejs(js);
         final retVal = _engine.visitProgram(prog);
         if (retVal?.jsValueOf != null) {
@@ -115,6 +120,7 @@ class JseServiceWeb extends JseService {
         .map((en) => jsVarFromValue(en.key, en.value))
     );
 
+  /// Add global variables
   @override
   void addJsVariables(List<JseVariable> vars) {
     _ensureEngine(throwIfStopped: true);
@@ -126,17 +132,14 @@ class JseServiceWeb extends JseService {
     });
   }
 
-  Map<String,JsFunction> _builtinFuncsToJs(List<JseBuiltinFunc> funcs)
-    => Map.fromEntries(
-      funcs.map((f) => MapEntry(f.name, _wrapFunction(f.func)))
-    );
-
+  /// Add global functions
   @override
   void addJsFunctions(List<JseBuiltinFunc> jsFuncs) {
     _addJsObjects(_builtinFuncsToJs(jsFuncs));
     _addedBuiltins.addAll(jsFuncs);
   }
 
+  /// Add functions in global objects
   @override
   void addJsObjectsWithFunctions(List<JseBuiltinObject> jsObjs) {
     var omap = Map.fromEntries(jsObjs.map((obj) {
@@ -150,6 +153,12 @@ class JseServiceWeb extends JseService {
   }
 
   @protected
+  Map<String,JsFunction> _builtinFuncsToJs(List<JseBuiltinFunc> funcs)
+    => Map.fromEntries(
+      funcs.map((f) => MapEntry(f.name, _wrapFunction(f.func)))
+    );
+
+  @protected
   JsFunction _wrapFunction(JseFunc func) => JsFunction(
     _engine.global,
     (en, args, ctx) {
@@ -160,19 +169,19 @@ class JseServiceWeb extends JseService {
   @protected
   void _addJsObjects(Map<String, JsObject> objs) {
     _ensureEngine(throwIfStopped: true);
-    print(objs);
+
     _engine.global.properties.addAll(objs);
   }
 
   @protected
   List<JseVariable> _getJseVariables() {
     _ensureEngine(throwIfStopped: true);
+
     return _engine.globalScope.allVariables
       .where((v) => v.name != 'global')
       .map((v) => JseVariable(name: v.name, jsObject: v.value))
       .toList();
   }
-
 
   @protected
   Future<void> _ensureEngine({bool throwIfStopped = false}) async {
@@ -197,10 +206,11 @@ class JseServiceWeb extends JseService {
     final mklog = (LogLevel level, {String funcName})
       => JseBuiltinFunc(
           funcName ?? level.toString().replaceAll("LogLevel.", ""),
-          (JsArguments args) => _log.add(LogItem(
-            text:  args.valueOf.map((o) => o.toString()).join(" "),
-            level: level
-          )),
+          (JsArguments args) 
+            => _log.add(LogItem(
+              text:  args.valueOf.map((o) => o.toString()).join(" "),
+              level: level
+            )),
           1,
           doc: "Log a $level message to output"
         );
