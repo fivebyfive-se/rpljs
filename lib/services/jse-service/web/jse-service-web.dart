@@ -9,8 +9,11 @@ import 'package:rpljs/models/log-item.dart';
 
 import 'package:rpljs/services/jse-service/base/jse-service-base.dart';
 import 'package:rpljs/services/jse-service/models/index.dart';
+import 'package:rpljs/services/jse-service/models/jse-verbosity.dart';
 
 class JseServiceWeb extends JseService {
+  JseVerbosity verbosity = JseVerbosity.normal;
+  
   @protected bool      _builtinsAdded = false;
   @protected JseState  _currState = JseState.None;
   @protected JSEngine  _engine;
@@ -44,9 +47,7 @@ class JseServiceWeb extends JseService {
   @override JseState get currentState => _currState;
 
   @override
-  Future<void> init() async {
-    await _ensureEngine();
-  }
+  Future<void> init() async => await _ensureEngine();
 
   /// Free resources
   @override
@@ -60,42 +61,43 @@ class JseServiceWeb extends JseService {
   }
 
   /// Stream of global variables added to [JsEngine].
-  @override Stream<List<JseVariable>>
-    get globals => _globals.stream;
+  @override Stream<List<JseVariable>> get globals => _globals.stream;
 
   /// Stream of state changes
-  @override Stream<JseState>
-    get state   => _state.stream;
+  @override Stream<JseState> get state   => _state.stream;
 
   /// Error-stream
-  @override Stream<JseException>
-    get errors  => _errors.stream;
+  @override Stream<JseException> get errors  => _errors.stream;
 
   /// Stream of UI-requests
-  @override Stream<JseUiRequest>
-    get uiRequests => _jsRequests.stream;
+  @override Stream<JseUiRequest> get uiRequests => _jsRequests.stream;
 
   /// Stream of names of builtin functions
-  @override Stream<List<JseBuiltin>>
-    get builtins => _builtins.stream;
+  @override Stream<List<JseBuiltin>> get builtins => _builtins.stream;
 
   /// Asynchronously parse a string of Javascript code
   @override
-  Future<JseParseResult> parseJs(String js) async {
+  Future<JseParseResult> parseJs(
+    String js, {
+      bool isSnippet = false
+    }
+  ) async {
     _ensureEngine(throwIfStopped: true);
     try {
       _streamState(JseState.Parsing);
       await (() async {
-        _streamRequest(JseUiRequestEcho([
+        _echo([
           '//' + DateTime.now().toIso8601String(),
           ...js.split("\n")
-        ]));
+        ], verbose: !isSnippet);
 
         final prog = parsejs(js);
         final retVal = _engine.visitProgram(prog);
+
         if (retVal?.jsValueOf != null) {
-          _log.add(LogItem.trace(retVal.jsValueOf.toString() ?? "null"));
+          _debug(retVal.jsValueOf.toString() ?? "null");
         }
+
         _streamGlobals();
         _streamOutput();
       })();
@@ -149,7 +151,28 @@ class JseServiceWeb extends JseService {
       _addedBuiltins.addAll(obj.nsFuncs);      
       return MapEntry(obj.name, jsObj);
     }));
+
     _addJsObjects(omap);
+  }
+
+  void _ifVerbosity(bool verbose, bool quiet, Function() func) {
+    if (
+      quiet ||
+      (verbose && verbosity == JseVerbosity.verbose) ||
+      (!verbose && verbosity.index > JseVerbosity.quiet.index)
+    ) {
+      func.call();
+    }
+  }
+
+  @protected
+  void _debug(String message, {bool verbose = true, bool quiet = false}) {
+    _ifVerbosity(verbose, quiet, () => _log.add(LogItem.debug(message)));
+  }
+
+  @protected 
+  void _echo(List<String> lines, {bool verbose = true, bool quiet = false}) {
+    _ifVerbosity(verbose, quiet, () => _streamRequest(JseUiRequestEcho(lines)));
   }
 
   @protected
@@ -187,10 +210,17 @@ class JseServiceWeb extends JseService {
   Future<void> _ensureEngine({bool throwIfStopped = false}) async {
     if (_engine == null) {
       await (() async {
+        _debug("Starting engine", verbose: true);
         _streamState(JseState.Starting);
+
         _engine = JSEngine();
+        
         await _ensureBuiltins();
+        
         _streamState(JseState.Idle);
+        
+        _debug("Engine started", verbose: true);
+        _streamOutput();
       })();
     } else if (currentState.index <= JseState.Stopped.index) {
       _streamError(JseStoppedException());
@@ -202,6 +232,8 @@ class JseServiceWeb extends JseService {
     if (_builtinsAdded) {
       return;
     }
+
+    _debug("Adding builtin functions", verbose: true);
 
     final mklog = (LogLevel level, {String funcName})
       => JseBuiltinFunc(
@@ -239,17 +271,30 @@ class JseServiceWeb extends JseService {
           return null;
         }, 0, doc: "List global variables");
 
-    final listBuiltins = JseBuiltinFunc('builtins', (_) {
-      _log.add(LogItem.info("Found ${_addedBuiltins.length} builtins:"));
-      _addedBuiltins.cast<JseBuiltinFunc>().forEach((b) {
-        _log.add(LogItem.debug("   ${b.name}(${b.numArgs})"));
-        _log.add(LogItem.info( "   ${b.doc}."));
-      });
-    }, 0, doc: 'List builtin functions');
+    final listBuiltins = JseBuiltinFunc(
+      'builtins', 
+      (_) {
+        _log.add(LogItem.info("Found ${_addedBuiltins.length} builtins:"));
+        _addedBuiltins.cast<JseBuiltinFunc>().forEach((b) {
+          _log.add(LogItem.debug("   ${b.name}(${b.numArgs})"));
+          _log.add(LogItem.info( "   ${b.doc}."));
+        });
+      },
+      0, doc: 'List builtin functions'
+    );
+
+    final listSettings = JseBuiltinFunc(
+      'settings',
+      (_) {
+        _streamRequest(JseUiRequestSettings());
+      },
+      0, doc: 'List current app settings'
+    );
 
     final globFuncs = [
       vardump,
       listBuiltins,
+      listSettings,
       mklog(LogLevel.debug, funcName: 'log')
     ];
 
@@ -265,8 +310,11 @@ class JseServiceWeb extends JseService {
       doc: 'Global console object')
     ];
 
+
     addJsFunctions(globFuncs);
     addJsObjectsWithFunctions(globObjs);
+
+    _debug("Added ${globFuncs.length} functions, 1 object", verbose: true);
 
     _streamBuiltins();
 

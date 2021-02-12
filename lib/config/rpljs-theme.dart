@@ -14,6 +14,7 @@ class RpljsTheme {
     Color primaryAccent,
     Color secondaryAccent,
     Color tertiaryAccent,
+    Color quaternaryAccent,
     Color error,
     Color warning,
     Color cardBackground,
@@ -39,6 +40,7 @@ class RpljsTheme {
       this.primaryAccent = primaryAccent,
       this.secondaryAccent = secondaryAccent,
       this.tertiaryAccent = tertiaryAccent,
+      this.quaternaryAccent = quaternaryAccent ?? tertiaryAccent,
 
       this.error = error,
       this.warning = warning ?? error,
@@ -81,6 +83,7 @@ class RpljsTheme {
   final Color primaryAccent;
   final Color secondaryAccent;
   final Color tertiaryAccent;
+  final Color quaternaryAccent;
 
   final Color error;
   final Color warning;
@@ -142,6 +145,7 @@ class RpljsTheme {
       primaryAccent: Constants.colors.pink,
       secondaryAccent: Constants.colors.blue,
       tertiaryAccent: Constants.colors.green,
+      quaternaryAccent: Constants.colors.yellow,
 
       error: Constants.colors.red,
       warning: Constants.colors.orange,

@@ -5,3 +5,5 @@ export './jse-parse-result.dart';
 export './jse-state.dart';
 export './jse-ui-request.dart';
 export './jse-variable.dart';
+export './jse-verbosity.dart';
+

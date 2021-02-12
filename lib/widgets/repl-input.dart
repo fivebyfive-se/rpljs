@@ -24,10 +24,13 @@ class ReplInputField extends StatefulWidget {
     this.history,
     this.variables, 
     this.builtins, 
-    this.onSubmit
+    this.onSubmit,
+    this.hideSuggestions = false,
   });
   
   final ReplInputController controller;
+
+  final bool hideSuggestions;
 
   final List<InputHistoryModel> history;
   final List<JseVariable>    variables;
@@ -142,24 +145,12 @@ class _ReplInputFieldState extends State<ReplInputField> {
       widget.onSubmit?.call();
       _suggestionsCloseIfEmpty(closeAnyway: true);
     };
-
-    return TypeAheadField(
-      direction: AxisDirection.up,
-      itemBuilder:              _suggestionItemBuilder,
-      onSuggestionSelected:     _onSuggestionSelected,
-      suggestionsBoxController: _suggestionsCtrl,
-      suggestionsCallback:      _getSuggestions,
-      noItemsFoundBuilder: (_) => null,
-
-      textFieldConfiguration: TextFieldConfiguration(
+    final textFieldConfig = TextFieldConfiguration(
         autofocus: true,
         controller: _ctrl.controller,
         focusNode: _ctrl.focusNode,
         onSubmitted: (_) => fireSubmit(),
         style: textStyleCode().copyWith(color: theme.inputText),
-        onChanged: (_) {
-          _suggestionsCloseIfEmpty(openIfNotEmpty: true);
-        },
         decoration: new InputDecoration(    
           contentPadding: padding(horizontal: 2, vertical: 1),                    
           fillColor: theme.inputBackground,
@@ -169,7 +160,26 @@ class _ReplInputFieldState extends State<ReplInputField> {
             onPressed: () => fireSubmit()
           )
         ),
-      ),
+      );
+
+    return widget.hideSuggestions 
+      ? TextField(
+          autofocus: textFieldConfig.autofocus,
+          controller: textFieldConfig.controller,
+          focusNode: textFieldConfig.focusNode,
+          onSubmitted: textFieldConfig.onSubmitted,
+          style: textFieldConfig.style,
+          decoration: textFieldConfig.decoration,
+        )
+      : TypeAheadField(
+      direction: AxisDirection.up,
+      itemBuilder:              _suggestionItemBuilder,
+      onSuggestionSelected:     _onSuggestionSelected,
+      suggestionsBoxController: _suggestionsCtrl,
+      suggestionsCallback:      _getSuggestions,
+      noItemsFoundBuilder: (_) => null,
+
+      textFieldConfiguration: textFieldConfig,
     );
   }
 }

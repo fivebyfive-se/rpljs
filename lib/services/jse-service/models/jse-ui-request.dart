@@ -8,12 +8,14 @@ abstract class JseUiTypedRequest<T> extends JseUiRequest {
 
   @protected
   final T _payload;
-} 
+}
+
+class JseUiRequestSettings extends JseUiRequest {}
 
 class JseUiRequestEcho extends JseUiTypedRequest<List<String>> {
   JseUiRequestEcho(List<String> lines)
     : super(payload: lines);
-    
+
   List<String> get lines => _payload;
 }
 

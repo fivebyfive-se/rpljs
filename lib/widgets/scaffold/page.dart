@@ -12,7 +12,7 @@ import 'package:rpljs/widgets/scaffold/drawer.dart';
 Scaffold scaffoldPage({
   BuildContext context,
   PageArgumentsBuilder builder,
-  bool drawer = true
+  bool drawer = true,
 }) {
   final arguments = PageArguments.of(context);
   final viewportSize = MediaQuery.of(context).size;

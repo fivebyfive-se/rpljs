@@ -51,8 +51,10 @@ class StartPage extends PageBase<StartPageArguments> {
 }
 
 class _StartPageState extends State<StartPage> {
-  final JseService  _jseService = JseServiceProvider.getInstance();
+  final JseService       _jseService = JseServiceProvider.getInstance();
+  final Stream<AppState> _appStateStream = AppStateProvider.getInstance().stream;
 
+  AppState             _appState = AppStateProvider.getInstance().snapshot;
   List<JseVariable>    _jseVariables = [];
   List<JseBuiltinFunc> _jseBuiltins  = [];
   JseState             _jseState;
@@ -77,6 +79,12 @@ class _StartPageState extends State<StartPage> {
       _terminalCtrl.echo(request.lines);
     } else if (request is JseUiRequestClear) {
       _terminalCtrl.clear();
+    } else if (request is JseUiRequestSettings) {
+      _terminalCtrl.print([TerminalChunk([
+        "#appState.config:",
+        "verbosity:       ${_appState.config.verbosity}",
+        "hideSuggestions: ${_appState.config.hideSuggestions}"
+      ], color: Constants.theme.quaternaryAccent)]);
     }
     _terminalUpdateScroll();
   }
@@ -117,6 +125,7 @@ class _StartPageState extends State<StartPage> {
   }
 
   Future<void> _jseParse(String code) async {
+    _jseService.verbosity = _appState.config.verbosity;
     await _jseService.parseJs(code);
   }
 
@@ -135,15 +144,23 @@ class _StartPageState extends State<StartPage> {
   }
 
   void _terminalUpdateScroll() {
-    Future.delayed(
-      Duration(milliseconds: 200),
-      () => _termScrollController.animateTo(
-        _termScrollController.position.maxScrollExtent,
-        duration: Duration(milliseconds: 400),
-        curve: Curves.easeInOut
-      )
-    );
+    if (_termScrollController.hasClients && _termScrollController.position != null) {
+      Future.delayed(
+        Duration(milliseconds: 200),
+        () => _termScrollController.animateTo(
+          _termScrollController.position.maxScrollExtent ?? 0,
+          duration: Duration(milliseconds: 400),
+          curve: Curves.easeInOut
+        )
+      );
+    }
   }
+
+  void _appStateHandler(AppState appState)
+    => _appState = appState;   
+
+  void _appStateInit()
+    => _appStateStream.listen(_appStateHandler);
 
 
   @override
@@ -153,6 +170,7 @@ class _StartPageState extends State<StartPage> {
     _jseServiceInit();
     _inputInit();
     _terminalInit();
+    _appStateInit();
   }
 
   @override
@@ -252,7 +270,8 @@ class _StartPageState extends State<StartPage> {
                       onSubmit: handleInput,
                       history: appState.history,
                       variables: _jseVariables,
-                      builtins: _jseBuiltins
+                      builtins: _jseBuiltins,
+                      hideSuggestions: appState.config.hideSuggestions
                     ))
                   ])
                 )

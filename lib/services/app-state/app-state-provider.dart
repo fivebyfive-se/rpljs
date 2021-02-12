@@ -6,8 +6,10 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:rpljs/extensions/index.dart';
+import 'package:rpljs/services/app-state/models/config-model.dart';
 import 'package:rpljs/services/app-state/models/input-history-model.dart';
 import 'package:rpljs/services/app-state/models/snippet-model.dart';
+import 'package:rpljs/services/jse-service.dart';
 
 import './models/index.dart';
 import './app-state-model.dart';
@@ -20,12 +22,16 @@ class AppStateProvider {
   /// Listenable stream of app states
   Stream<AppState> get stream => _ctrl.stream;
 
+  /// Update config settings
+  void updateConfig(ConfigModel model)
+    => Hive.box<ConfigModel>(configBox).put("config", model);
+
   /// Add a new snippet
   void addSnippet()
     => add<SnippetModel>(
       SnippetModel(
         label: DateTime.now().toIso8601String(),
-        content: "console.log(Date());"
+        content: "console.log('Hello, Sailor!');"
       ));
 
   /// Modify a snippet
@@ -70,10 +76,12 @@ class AppStateProvider {
 
   /// Call from main to init storage
   static Future<void> init() async {
-    Hive.registerAdapter(SnippetAdapter());
+    Hive.registerAdapter(ConfigAdapter());
     Hive.registerAdapter(InputHistoryAdapter());
+    Hive.registerAdapter(SnippetAdapter());
 
     await Hive.initFlutter();
+    await Hive.openBox<ConfigModel>(configBox);
     await Hive.openBox<InputHistoryModel>(historyBox);
     await Hive.openBox<SnippetModel>(snippetsBox);
   }
@@ -94,7 +102,15 @@ class AppStateProvider {
             .values
             .order((a,b) => a.compareTo(b))
             .map((s) => s as SnippetModel)
-            .toList()
+            .toList(),
+    config: Hive.box<ConfigModel>(configBox)
+        .get(
+          "config",
+          defaultValue: ConfigModel(
+            verbosity: JseVerbosity.normal,
+            hideSuggestions: false
+          )
+        )
   );
 
   @protected 
@@ -121,9 +137,9 @@ class AppStateProvider {
 
   @protected static AppStateProvider _instance;
 
+  static String get configBox   => ConfigModel.hiveBoxName;
   static String get snippetsBox => SnippetModel.hiveBoxName;
-
-  static String get historyBox => InputHistoryModel.hiveBoxName;
+  static String get historyBox  => InputHistoryModel.hiveBoxName;
 
   static AppStateProvider getInstance()
     => _instance ?? (_instance = AppStateProvider());

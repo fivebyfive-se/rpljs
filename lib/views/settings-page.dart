@@ -6,6 +6,7 @@ import 'package:rpljs/config/constants.dart';
 import 'package:rpljs/helpers/index.dart';
 
 import 'package:rpljs/services/app-state.dart';
+import 'package:rpljs/services/jse-service.dart';
 
 import 'package:rpljs/views/base/index.dart';
 
@@ -49,8 +50,12 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
 
-  Widget _sectionList({List<Widget> children, int flex = 6})
-    => flexp(flex, ListView(children: children));
+  Widget _sectionList({
+    List<Widget> children,
+    int flex = 6,
+    EdgeInsetsGeometry padding = EdgeInsets.zero
+  })
+    => flexp(flex, ListView(children: children, padding: padding));
 
   Map<String,bool> _editing = <String,bool>{};
   
@@ -181,13 +186,61 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (context, appState, provider) => scaffoldPage(
         drawer: false,
         context: context,
-        builder: (context, arguments) 
-          => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        builder: (context, arguments) {
+          final _saveConfig = () {
+            provider.updateConfig(appState.config);
+            setState(() {});
+          };
+          final _setVerbosity = (JseVerbosity v) {
+            appState.config.verbosity = v;
+            _saveConfig();
+          };
+
+          return Column(children: [
+              _sectionTitle("Settings", icon: Icons.settings_applications),
+              flexp(3,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  flexp(5,
+                    CheckboxListTile(
+                      value: appState.config.hideSuggestions,
+                      onChanged: (v) {
+                        appState.config.hideSuggestions = v;
+                        _saveConfig();
+                      },
+                      title: Txt.p("Hide suggestions", style: textStyleHeading()),
+                      subtitle: Txt.p("Don't show a list of suggestions above code input"),
+                      controlAffinity: ListTileControlAffinity.leading,
+                    )
+                  ),
+                  flexp(3,
+                    Column(children: [
+                      RadioListTile(
+                          value: JseVerbosity.quiet,
+                          groupValue: appState.config.verbosity,
+                          onChanged: _setVerbosity,
+                          title: Txt.p("Quiet")
+                        ),
+                        RadioListTile(
+                          value: JseVerbosity.normal,
+                          groupValue: appState.config.verbosity,
+                          onChanged: _setVerbosity,
+                          title: Txt.p("Normal")
+                        ),
+                        RadioListTile(
+                          value: JseVerbosity.verbose,
+                          groupValue: appState.config.verbosity,
+                          onChanged: _setVerbosity,
+                          title: Txt.p("Verbose")
+                        )
+                    ])
+                  )
+                ],
+              )),
               _sectionTitle("Snippets", icon: LineAwesomeIcons.javascript__js_),
               _sectionList(
-                flex: 8,
+                flex: 5,
                 children: <Widget>[
                   ...appState.snippets.map((snippet) 
                     => _editSnippet(
@@ -223,14 +276,19 @@ class _SettingsPageState extends State<SettingsPage> {
                   )
                 )
               ),
-              Divider(),
+            Divider(),
               _sectionTitle("Input history", icon: Icons.history),
               _sectionList(
+                flex: 4,
                 children: <Widget>[
                   ...appState.history.map((h) {
                     return ListTile(
-                      title: Txt.h2(h.content),
-                      subtitle: Txt.p(h.timestamp.toIso8601String()),
+                      title: Txt.p(h.content, style: textStyleCode()),
+                      subtitle: Txt.p(
+                        h.timestamp.toIso8601String(),
+                        style: textStyleBody().copyWith(
+                          fontSize: Constants.fontSizeSmall
+                        )),
                       trailing: btnIcon(
                         icon: Icons.delete_forever,
                         onPressed: () {
@@ -250,9 +308,9 @@ class _SettingsPageState extends State<SettingsPage> {
                   })
                 ],
               ),
-            ],
-          )
-      )
+
+        ]);
+      })
     );
   }
 }
