@@ -6,6 +6,8 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:rpljs/extensions/index.dart';
+import 'package:rpljs/services/app-state/models/input-history-model.dart';
+import 'package:rpljs/services/app-state/models/snippet-model.dart';
 
 import './models/index.dart';
 import './app-state-model.dart';
@@ -35,8 +37,16 @@ class AppStateProvider {
     => remove<SnippetModel>(snippet);
 
   /// Add new item to input log
-  void pushHistory(String content)
-    => add<InputHistoryModel>(InputHistoryModel(content: content));
+  void pushHistory(String content) {
+    final box = Hive.box<InputHistoryModel>(historyBox);
+    if (box.values.any((v) => v.content == content)) {
+      final existing = box.values.firstWhere((h) => h.content == content);
+      existing.timestamp = DateTime.now();
+      _edit<InputHistoryModel>(existing);
+    } else {
+      add<InputHistoryModel>(InputHistoryModel(content: content));
+    }
+  }
 
   /// Edit history item
   void editHistory(InputHistoryModel model)
@@ -64,8 +74,8 @@ class AppStateProvider {
     Hive.registerAdapter(InputHistoryAdapter());
 
     await Hive.initFlutter();
-    await Hive.openBox<InputHistoryModel>(_historyBox);
-    await Hive.openBox<SnippetModel>(_snippetsBox);
+    await Hive.openBox<InputHistoryModel>(historyBox);
+    await Hive.openBox<SnippetModel>(snippetsBox);
   }
 
   @protected
@@ -75,12 +85,12 @@ class AppStateProvider {
   AppState _currentState;
 
   AppState _loadState() => AppState(
-    history: Hive.box<InputHistoryModel>(_historyBox)
+    history: Hive.box<InputHistoryModel>(historyBox)
             .values
             .order((a,b) => b.compareTo(a))
             .map((h) => h as InputHistoryModel)
             .toList(),
-    snippets: Hive.box<SnippetModel>(_snippetsBox)
+    snippets: Hive.box<SnippetModel>(snippetsBox)
             .values
             .order((a,b) => a.compareTo(b))
             .map((s) => s as SnippetModel)
@@ -109,15 +119,11 @@ class AppStateProvider {
       _update();
     });
 
+  @protected static AppStateProvider _instance;
 
-  @protected
-  static String _snippetsBox = SnippetModel().boxName;
+  static String get snippetsBox => SnippetModel.hiveBoxName;
 
-  @protected
-  static String _historyBox  = InputHistoryModel().boxName;
-
-  @protected
-  static AppStateProvider _instance;
+  static String get historyBox => InputHistoryModel.hiveBoxName;
 
   static AppStateProvider getInstance()
     => _instance ?? (_instance = AppStateProvider());

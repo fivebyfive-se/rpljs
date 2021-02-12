@@ -6,8 +6,10 @@ import '_base-model.dart';
 
 @HiveType()
 class SnippetModel extends BaseModel {
+  static const String hiveBoxName = "_snippets";
+
   @override
-  final String boxName = "_snippets";
+  final String boxName = hiveBoxName;
 
   /// JavaScript code
   @HiveField(1)

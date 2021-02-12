@@ -40,6 +40,7 @@ class Terminal extends StatelessWidget {
                 (span) => RichText(
                   text: TextSpan(
                     children: span.lines
+                      .map((l) => l.trimRight())
                       .map((l) => TextSpan(text: "$l\n")).toList(),
                     style: span.color == null 
                         ? style

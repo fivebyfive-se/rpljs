@@ -132,7 +132,8 @@ class _StartPageState extends State<StartPage> {
   @override
   void initState() {
     super.initState();
-
+    
+    _initJseService();
     _initInput();
     _printWelcomeMessage();
   }

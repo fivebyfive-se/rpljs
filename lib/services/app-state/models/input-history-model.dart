@@ -6,8 +6,10 @@ import '_base-model.dart';
 
 @HiveType()
 class InputHistoryModel extends BaseModel {
+  static const String hiveBoxName = "_history"; 
+
   @override
-  final String boxName = "_history";
+  final String boxName = hiveBoxName;
 
   /// The saved input string
   @HiveField(1)

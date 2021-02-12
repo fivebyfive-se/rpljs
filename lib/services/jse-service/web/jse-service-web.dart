@@ -126,24 +126,27 @@ class JseServiceWeb extends JseService {
     });
   }
 
+  Map<String,JsFunction> _builtinFuncsToJs(List<JseBuiltinFunc> funcs)
+    => Map.fromEntries(
+      funcs.map((f) => MapEntry(f.name, _wrapFunction(f.func)))
+    );
+
   @override
   void addJsFunctions(List<JseBuiltinFunc> jsFuncs) {
-    jsFuncs.forEach((fn) {
-      _addedBuiltins.add(fn);
-      _addJsObject(fn.name, _wrapFunction(fn.func));
-    });
+    _addJsObjects(_builtinFuncsToJs(jsFuncs));
+    _addedBuiltins.addAll(jsFuncs);
   }
 
   @override
   void addJsObjectsWithFunctions(List<JseBuiltinObject> jsObjs) {
-    jsObjs.forEach((obj) {
+    var omap = Map.fromEntries(jsObjs.map((obj) {
       final jsObj = JsObject();
-      obj.objFuncs.forEach((fn) {
-        _addedBuiltins.add(fn.withPrefix(obj.name));
-        jsObj.properties.putIfAbsent(fn.name, () => _wrapFunction(fn.func));
-      });
-      _addJsObject(obj.name, jsObj);
-    });
+      final funcs = _builtinFuncsToJs(obj.funcs);
+      jsObj.properties.addAll(funcs);
+      _addedBuiltins.addAll(obj.nsFuncs);      
+      return MapEntry(obj.name, jsObj);
+    }));
+    _addJsObjects(omap);
   }
 
   @protected
@@ -155,10 +158,10 @@ class JseServiceWeb extends JseService {
     });
 
   @protected
-  void _addJsObject(String name, JsObject value) {
+  void _addJsObjects(Map<String, JsObject> objs) {
     _ensureEngine(throwIfStopped: true);
-    
-    _engine.global.properties.putIfAbsent(name, () => value);
+    print(objs);
+    _engine.global.properties.addAll(objs);
   }
 
   @protected
@@ -191,63 +194,63 @@ class JseServiceWeb extends JseService {
       return;
     }
 
-    final mklog = (LogLevel level)
-      => (JsArguments args) { 
-        _log.add(LogItem(
-          text:  args.valueOf.map((o) => o.toString()).join(" "),
-          level: level
-        ));
-      };
+    final mklog = (LogLevel level, {String funcName})
+      => JseBuiltinFunc(
+          funcName ?? level.toString().replaceAll("LogLevel.", ""),
+          (JsArguments args) => _log.add(LogItem(
+            text:  args.valueOf.map((o) => o.toString()).join(" "),
+            level: level
+          )),
+          1,
+          doc: "Log a $level message to output"
+        );
 
-    final clear = (args) {
-      _streamRequest(JseUiRequestClear());
-      return null;
-    };
+    final clear = JseBuiltinFunc(
+        'clear', (args) {
+          _streamRequest(JseUiRequestClear());
+          return null;
+        }, 0, doc: 'Clear output');
 
-    final vardump = (args) {
-      final vars = _getJseVariables();
-      if (vars.length == 0) {
-        _log.add(LogItem.debug('[vardump] no global variables set'));
-      } else {
-        _log.add(LogItem.debug('[vardump] found the following variables:'));
-      }
-      vars.forEach(
-        (v) => _log.add(LogItem.debug("   ${v.name}: [${v.value.toString()}]"))
-      );
-      return null;
-    };
+    final vardump = JseBuiltinFunc(
+        'vardump', (args) {
+          final vars = _getJseVariables();
+
+          if (vars.length == 0) {
+            _log.add(LogItem.debug('[vardump] no global variables set'));
+          } else {
+            _log.add(LogItem.debug('[vardump] found the following variables:'));
+          }
+
+          vars.forEach(
+            (v) => _log.add(
+              LogItem.debug("   ${v.name}: [${v.value.toString()}]")
+            )
+          );
+          return null;
+        }, 0, doc: "List global variables");
+
+    final listBuiltins = JseBuiltinFunc('builtins', (_) {
+      _log.add(LogItem.info("Found ${_addedBuiltins.length} builtins:"));
+      _addedBuiltins.cast<JseBuiltinFunc>().forEach((b) {
+        _log.add(LogItem.debug("   ${b.name}(${b.numArgs})"));
+        _log.add(LogItem.info( "   ${b.doc}."));
+      });
+    }, 0, doc: 'List builtin functions');
+
     final globFuncs = [
-      JseBuiltinFunc(
-        'clear',  clear, 0,
-        doc: 'Clear output window'
-      ),
-      JseBuiltinFunc(
-        'vardump', vardump, 0,
-        doc: 'Dump names and values of global variables to output'
-      ),
-      JseBuiltinFunc(
-        'log', mklog(LogLevel.debug), 1,
-        doc: 'Write a value to output'
-      )
+      vardump,
+      listBuiltins,
+      mklog(LogLevel.debug, funcName: 'log')
     ];
+
     final globObjs = [
       JseBuiltinObject('console', [ 
-        JseBuiltinFunc(
-          'log', mklog(LogLevel.info), 1,
-          doc: 'Log message to output'
-        ),
-        JseBuiltinFunc(
-          'trace', mklog(LogLevel.trace), 1,
-          doc: 'Log trace message to output'
-        ),
-        JseBuiltinFunc(
-          'warn', mklog(LogLevel.warn), 1,
-          doc: 'Log warning message to output'
-        ),
-        JseBuiltinFunc(
-          'error', mklog(LogLevel.error), 1,
-          doc: 'Log error message to output'
-        ),
+        mklog(LogLevel.info, funcName: 'log'),
+        mklog(LogLevel.trace),
+        mklog(LogLevel.debug),
+        mklog(LogLevel.warn),
+        mklog(LogLevel.error),
+        clear
       ],
       doc: 'Global console object')
     ];

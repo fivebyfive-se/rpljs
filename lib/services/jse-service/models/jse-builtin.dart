@@ -7,6 +7,8 @@ abstract class JseBuiltin {
   final String doc;
 
   dynamic get value;
+
+  JseBuiltin withName(String name);
   JseBuiltin withPrefix(String prefix);
 }
 
@@ -21,23 +23,27 @@ class JseBuiltinFunc extends JseBuiltin {
   dynamic get value => func;
 
   @override
+  JseBuiltinFunc withName(String newName)
+    => JseBuiltinFunc(newName, func, numArgs, doc: doc);
+
+  @override
   JseBuiltinFunc withPrefix(String prefix)
-    => JseBuiltinFunc(
-      "$prefix.$name",
-      func,
-      numArgs,
-      doc: doc
-    );
+    => withName("$prefix.$name");
 }
 
 class JseBuiltinObject extends JseBuiltin {
-  JseBuiltinObject(String name, this.objFuncs, {String doc})
-    : super(name, doc: doc);
+  JseBuiltinObject(String name, List<JseBuiltinFunc> funcs, {String doc})
+    : this.funcs = funcs ?? [],
+      super(name, doc: doc);
 
-  final List<JseBuiltinFunc> objFuncs;
+  final List<JseBuiltinFunc> funcs;
 
-  List<JseBuiltinFunc> get funcs =>
-    objFuncs.map(
+  void add(String name, JseFunc func, int numArgs, {String doc})
+    => funcs.add(JseBuiltinFunc(name, func, numArgs, doc: doc));
+  
+
+  List<JseBuiltinFunc> get nsFuncs =>
+    funcs.map(
       (f) => f.withPrefix(name)
     ).toList();
 
@@ -48,10 +54,10 @@ class JseBuiltinObject extends JseBuiltin {
   dynamic get value => funcs;
 
   @override
+  JseBuiltinObject withName(String newName)
+    => JseBuiltinObject(newName, funcs, doc: doc);
+
+  @override
   JseBuiltinObject withPrefix(String prefix)
-    => JseBuiltinObject(
-      "$prefix.$name",
-      objFuncs,
-      doc: doc
-    );
+    => withName("$prefix.$name");
 }
