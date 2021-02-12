@@ -37,11 +37,11 @@ Drawer scaffoldDrawer<T extends PageArguments>(
             ),
             child: Text(''),
           ),
-          drawerSubheadingTile(title: "Rpljs", icon: Icons.code),
+          drawerSubheadingTile(title: "Rpljs", icon: LineAwesomeIcons.terminal),
           drawerNavLinkTile(
             title: "Settings",
             subtitle: "Configure JavaScript settings",
-            icon: Icons.settings_applications,
+            icon: LineAwesomeIcons.horizontal_sliders,
             isActive: SettingsPage.route.isActive(context),
             onTap: () => SettingsPage.route.navigateTo(context: context)
           ),

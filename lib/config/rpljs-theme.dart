@@ -10,6 +10,7 @@ class RpljsTheme {
     Brightness brightness,
     Color background,
     Color foreground,
+    Color foregroundDisabled,
     Gradient backgroundGradient,
     Color primaryAccent,
     Color secondaryAccent,
@@ -29,11 +30,13 @@ class RpljsTheme {
     Color varForeground,
     Color inputBackground,
     Color inputText,
-    Color inputAccent
+    Color inputAccent,
+    Color inputAccentDisabled,
   }) :this.brightness = brightness,
 
       this.background = background,
       this.foreground = foreground, 
+      this.foregroundDisabled = foregroundDisabled ?? foreground.withAlpha(0x80),
 
       this.backgroundGradient = backgroundGradient,
 
@@ -62,13 +65,15 @@ class RpljsTheme {
       
       this.inputBackground = inputBackground ?? background,
       this.inputText = inputText ?? foreground,
-      this.inputAccent = inputAccent ?? primaryAccent
+      this.inputAccent = inputAccent ?? primaryAccent,
+      this.inputAccentDisabled = inputAccentDisabled ?? inputText ?? foreground
     ;
 
   final Brightness brightness;
   
   final Color background;
   final Color foreground;
+  final Color foregroundDisabled;
   final Gradient backgroundGradient;
 
   final Color cardBackground;
@@ -97,6 +102,7 @@ class RpljsTheme {
   final Color inputBackground;
   final Color inputText;
   final Color inputAccent;
+  final Color inputAccentDisabled;
 
   ThemeData toThemeData() => ThemeData(
     brightness:      brightness,
@@ -137,6 +143,7 @@ class RpljsTheme {
       brightness: Brightness.dark,
       background: Constants.colors.darkGrey,
       foreground: Constants.colors.whiteish,
+      foregroundDisabled: Constants.colors.greyish,
       backgroundGradient: LinearGradient(
         colors: [Constants.colors.darkGrey, Constants.colors.darkPink],
         begin: Alignment.topLeft,
@@ -174,7 +181,8 @@ class RpljsTheme {
 
       inputBackground: Constants.colors.blackish,
       inputText: Constants.colors.whiteish,
-      inputAccent: Constants.colors.lightPink
+      inputAccent: Constants.colors.lightPink,
+      inputAccentDisabled: Constants.colors.greyishPink
 
     );
 }
@@ -188,6 +196,7 @@ class RpljsColors {
     'grey': '#474759',
     'light_grey': '#8585A6',
     'whiteish': '#F4FFF2',
+    'greyish': '#626661',
     'pink': '#B312B3',
     'red': '#B31212',
     'orange': '#C26100',
@@ -196,7 +205,8 @@ class RpljsColors {
     'blue': '#33BBFF',
     'purple': '#9933FF',
     'light_pink': '#FF33FF',
-    'pale_pink': '#DA75FF'
+    'pale_pink': '#DA75FF',
+    'greyish_pink': '#4D1F4D'
   };
 
   Color get blackish  => hexToColor(_hexColors['blackish']);
@@ -205,6 +215,7 @@ class RpljsColors {
   Color get grey      => hexToColor(_hexColors['grey']);
   Color get lightGrey => hexToColor(_hexColors['light_grey']);
   Color get whiteish  => hexToColor(_hexColors['whiteish']);
+  Color get greyish   => hexToColor(_hexColors['greyish']);
   Color get pink      => hexToColor(_hexColors['pink']);
   Color get red       => hexToColor(_hexColors['red']);
   Color get orange    => hexToColor(_hexColors['orange']);
@@ -214,5 +225,6 @@ class RpljsColors {
   Color get purple    => hexToColor(_hexColors['purple']);
   Color get lightPink => hexToColor(_hexColors['light_pink']);
   Color get palePink  => hexToColor(_hexColors['pale_pink']);
+  Color get greyishPink  => hexToColor(_hexColors['greyish_pink']);
 }
 

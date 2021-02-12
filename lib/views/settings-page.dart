@@ -127,11 +127,16 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           flexp(1,
             btnIcon(
-              icon: snippet.runOnInit ? Icons.favorite : Icons.favorite_border,
+              icon: snippet.runOnInit 
+                ? LineAwesomeIcons.toggle_on 
+                : LineAwesomeIcons.toggle_off,
               onPressed: () {
                 snippet.runOnInit = !snippet.runOnInit;
                 onSave?.call(snippet);
               },
+              color: snippet.runOnInit 
+                ? Constants.theme.primaryAccent
+                : Constants.theme.foreground
             )
           ),
           flexp(9,
@@ -160,7 +165,7 @@ class _SettingsPageState extends State<SettingsPage> {
           flexp(2,
             isEditing ? Column(
               children: [
-                btn("Save", icon: Icons.save, onPressed: () {
+                btn("Save", icon: LineAwesomeIcons.save, onPressed: () {
                   snippet.label = labCtrl.text;
                   snippet.content = cntCtrl.text;
                   onSave?.call(snippet);
@@ -168,7 +173,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 }),
                 spex(1),
                 btn("Cancel",
-                  icon: Icons.cancel,
+                  icon: LineAwesomeIcons.times_circle,
                   color: Constants.theme.secondaryAccent,
                   onPressed: () => _toggleEdit(snippet.uuid, force: false)
                 ),
@@ -179,7 +184,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 spex(1),
                 btn("Delete", 
                   color: Constants.theme.error,
-                  icon: Icons.delete_forever, 
+                  icon: LineAwesomeIcons.backspace, 
                   onPressed: () => onDelete?.call(snippet)
                 ),
                 spex(2)
@@ -218,7 +223,9 @@ class _SettingsPageState extends State<SettingsPage> {
           };
 
           return Column(children: [
-              _sectionTitle("Settings", icon: Icons.settings_applications),
+              _sectionTitle("Settings", 
+                icon: LineAwesomeIcons.horizontal_sliders
+              ),
               flexp(7,
               Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -251,10 +258,10 @@ class _SettingsPageState extends State<SettingsPage> {
                         ListTile(
                           leading: Icon(
                             appState.config.verbosity == JseVerbosity.quiet
-                              ? Icons.chat_bubble_outline 
+                              ? LineAwesomeIcons.comment_slash
                               : appState.config.verbosity == JseVerbosity.verbose 
-                                ? Icons.chat_rounded
-                                : Icons.chat_outlined
+                                ? LineAwesomeIcons.comment
+                                : LineAwesomeIcons.alternate_comment
                           ),
 
                           title: DropdownButton<JseVerbosity>(
@@ -306,7 +313,7 @@ class _SettingsPageState extends State<SettingsPage> {
               flexp(1,
                 Center(
                   child: btnLabelIcon(
-                    icon: Icons.add,
+                    icon: LineAwesomeIcons.plus_circle,
                     backgroundColor: Constants.theme.primaryAccent,
                     label: "New snippet...",
                     onPressed: () => provider.addSnippet(),
@@ -314,7 +321,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 )
               ),
             Divider(),
-              _sectionTitle("Input history", icon: Icons.history),
+              _sectionTitle("Input history",
+                icon: LineAwesomeIcons.terminal),
               _sectionList(
                 flex: 5,
                 children: <Widget>[
@@ -327,7 +335,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           fontSize: Constants.fontSizeSmall
                         )),
                       trailing: btnIcon(
-                        icon: Icons.delete_forever,
+                        icon: LineAwesomeIcons.backspace,
                         onPressed: () {
                           final copy = h.clone();
                           provider.deleteHistory(h);

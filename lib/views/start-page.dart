@@ -138,8 +138,10 @@ class _StartPageState extends State<StartPage> {
   }
 
   Future<void> _inputHandler() async {
-    await _jseParse(_inputController.text);
-    _inputController.text = "";
+    if (_inputController.isNotEmpty) {
+      await _jseParse(_inputController.text);
+      _inputController.text = "";
+    }
   }
 
   void _inputInit() {
@@ -249,7 +251,9 @@ class _StartPageState extends State<StartPage> {
                     flexp(1,
                       ListDialogButton<SnippetModel>(
                         icon: LineAwesomeIcons.javascript__js_,
-                        color: Constants.theme.foreground,
+                        color: appState.snippets.isEmpty 
+                          ? Constants.theme.foregroundDisabled
+                          : Constants.theme.foreground,
                         dialogTitle: 'Snippets',
                         tooltip: 'JS snippets',
                         itemBuilder: (context) => [

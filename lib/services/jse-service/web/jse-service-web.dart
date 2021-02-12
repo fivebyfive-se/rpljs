@@ -93,9 +93,9 @@ class JseServiceWeb extends JseService {
 
         final prog = parsejs(js);
         final retVal = _engine.visitProgram(prog);
-
+        
         if (retVal?.jsValueOf != null) {
-          _debug(retVal.jsValueOf.toString() ?? "null");
+          _debug(retVal.jsValueOf.toString() ?? "null", quiet: true);
         }
 
         _streamGlobals();

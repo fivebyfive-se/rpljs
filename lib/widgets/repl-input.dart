@@ -145,7 +145,8 @@ class _ReplInputFieldState extends State<ReplInputField> {
   @override
   Widget build(BuildContext context) {
     final theme = Constants.theme;
-    final inpIcon = (IconData i) => Icon(i, color: theme.inputAccent);
+    final inpIcon = (IconData i) 
+      => Icon(i, color: _ctrl.isEmpty ? theme.inputAccentDisabled : theme.inputAccent);
     final fireSubmit = () {
       widget.onSubmit?.call();
       _suggestionsCloseIfEmpty(closeAnyway: true);
@@ -155,13 +156,15 @@ class _ReplInputFieldState extends State<ReplInputField> {
         controller: _ctrl.controller,
         focusNode: _ctrl.focusNode,
         onSubmitted: (_) => fireSubmit(),
+        onChanged: (_) => setState((){}),
         style: textStyleCode().copyWith(color: theme.inputText),
         decoration: new InputDecoration(    
           contentPadding: padding(horizontal: 2, vertical: 1),                    
           fillColor: theme.inputBackground,
           prefixIcon: inpIcon(LineAwesomeIcons.dollar_sign),
           suffixIcon: IconButton(
-            icon: inpIcon(Icons.subdirectory_arrow_left),
+            icon: inpIcon(
+              LineAwesomeIcons.play_circle),
             onPressed: () => fireSubmit()
           )
         ),
@@ -173,6 +176,7 @@ class _ReplInputFieldState extends State<ReplInputField> {
           controller: textFieldConfig.controller,
           focusNode: textFieldConfig.focusNode,
           onSubmitted: textFieldConfig.onSubmitted,
+          onChanged: textFieldConfig.onChanged,
           style: textFieldConfig.style,
           decoration: textFieldConfig.decoration,
         )
