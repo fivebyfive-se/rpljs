@@ -204,7 +204,7 @@ class _StartPageState extends State<StartPage> {
 
           return Column(
             children: [
-              flexp(6,
+              flexp(8,
                 Terminal(
                   controller: _termScrollController,
                   initialData: _terminalCtrl.currentState,
@@ -230,9 +230,9 @@ class _StartPageState extends State<StartPage> {
                 )
               ),
               
-              flexp(2,
+              flexp(3,
                 Container(
-                  padding: padding(horizontal: 2, vertical: 4),
+                  padding: padding(horizontal: 1, vertical: 2),
                   margin: marginOnly(top: 2),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(

@@ -24,20 +24,15 @@ Scaffold scaffoldPage({
     drawer: drawer 
       ? scaffoldDrawer(context, arguments)
       : null,
-    body: SafeArea(
-      left: true,
-      top: true,
-      right: true,
-      bottom: true,
-      minimum: padding(horizontal: 0, vertical: 0),
-      child: Container(
-        width: viewportSize.width,
-        height: viewportSize.height - appBar.preferredSize.height,
-        decoration: BoxDecoration(
-          gradient: Constants.theme.backgroundGradient
-        ),
-        child: builder.call(context, arguments)
+    body: Container(
+      width: viewportSize.width,
+      height: viewportSize.height - appBar.preferredSize.height,
+      padding: padding(horizontal: 1, vertical: 1),
+      decoration: BoxDecoration(
+        gradient: Constants.theme.backgroundGradient
       ),
+      child: builder.call(context, arguments)
     ),
+  
   );
 }

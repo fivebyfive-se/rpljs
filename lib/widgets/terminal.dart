@@ -18,6 +18,7 @@ class Terminal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewportSize = MediaQuery.of(context).size;
+    final headingRex = RegExp(r'^\s*#+');
 
     return StreamBuilder<List<TerminalChunk>>(
       stream: stream,
@@ -44,15 +45,14 @@ class Terminal extends StatelessWidget {
                     children: span.lines
                       .map((l) => l.trimRight())
                       .map((l) => TextSpan(
-                        text: l.replaceFirst('#','') + "\n",
-                        style: l.trim().startsWith('#') 
-                          ? style
-                              .copyWith(
-                                inherit: true,
-                                fontWeight: FontWeight.bold,
-                                fontSize: Constants.fontSizeLarge,
-                                color: span.color ?? null
-                              )
+                        text: l.replaceFirst(headingRex,'') + "\n",
+                        style: headingRex.hasMatch(l)
+                          ? style.copyWith(
+                              inherit: true,
+                              fontWeight: FontWeight.bold,
+                              fontSize: Constants.fontSizeLarge,
+                              color: span.color ?? null
+                            )
                           : null
                       )).toList(),
                     style: span.color == null 
