@@ -265,7 +265,7 @@ class JseServiceWeb extends JseService {
 
           vars.forEach(
             (v) => _log.add(
-              LogItem.debug("   ${v.name}: [${v.value.toString()}]")
+              LogItem.debug("   ${v.name}: [${v.displayString}]")
             )
           );
           return null;

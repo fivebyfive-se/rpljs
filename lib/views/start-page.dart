@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dartjsengine/dartjsengine.dart';
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 
@@ -53,7 +54,7 @@ class StartPage extends PageBase<StartPageArguments> {
 class _StartPageState extends State<StartPage> {
   final JseService       _jseService = JseServiceProvider.getInstance();
   final Stream<AppState> _appStateStream = AppStateProvider.getInstance().stream;
-
+  final Map<String,bool> _runSnippets = <String,bool>{};
   AppState             _appState = AppStateProvider.getInstance().snapshot;
   List<JseVariable>    _jseVariables = [];
   List<JseBuiltinFunc> _jseBuiltins  = [];
@@ -129,6 +130,13 @@ class _StartPageState extends State<StartPage> {
     await _jseService.parseJs(code);
   }
 
+  Future<void> _jseParseSnippet(SnippetModel snippet) async {
+    if (!_runSnippets.containsKey(snippet.uuid)) {
+      await _jseParse(snippet.toJavaScript());
+      _runSnippets[snippet.uuid] = true;
+    }
+  }
+
   Future<void> _inputHandler() async {
     await _jseParse(_inputController.text);
     _inputController.text = "";
@@ -156,8 +164,12 @@ class _StartPageState extends State<StartPage> {
     }
   }
 
-  void _appStateHandler(AppState appState)
-    => _appState = appState;   
+  void _appStateHandler(AppState appState) {
+    _appState = appState;
+    _appState.snippets
+      .where((s) => s.runOnInit && !_runSnippets.containsKey(s.uuid))
+      .forEach((snippet) => _jseParseSnippet(snippet));
+  }   
 
   void _appStateInit()
     => _appStateStream.listen(_appStateHandler);
@@ -206,7 +218,9 @@ class _StartPageState extends State<StartPage> {
                       items: [..._jseVariables],
                       labelConverter: (v) => v.toString(),
                       tooltipConverter: (v) => "Insert ${v.name} in input field",
-                      onPressed: (v) => _inputController.insertText(v.name),
+                      onPressed: (v) => _inputController.insertText(
+                        v.name + ((v.jsObject is JsFunction) ? '()' : '')  
+                      ),
                       backgroundColor: Constants.theme.varBackground,
                       textColor: Constants.theme.varForeground,
                     ))
@@ -257,7 +271,7 @@ class _StartPageState extends State<StartPage> {
                                   }
                                 ),
                                 onTap: () {
-                                  _jseParse(snippet.toJavaScript());
+                                  _jseParseSnippet(snippet);
                                   Navigator.of(context).pop();
                                 }
                               )

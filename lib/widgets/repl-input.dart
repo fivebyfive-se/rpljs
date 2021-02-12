@@ -109,6 +109,11 @@ class _ReplInputFieldState extends State<ReplInputField> {
       suggestion.pattern,
       suggestion.suggestion
     );
+    if (suggestion.source == SuggestionSource.builtin) {
+      final argListPos = _ctrl.text.indexOf(suggestion.suggestion) 
+        + suggestion.suggestion.length - 1; // between ( and )
+      _ctrl.setCursor(position: argListPos);
+    }
     _ctrl.requestFocus();
     _suggestionsCloseIfEmpty(closeAnyway: true);
 

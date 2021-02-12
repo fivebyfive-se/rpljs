@@ -1,3 +1,5 @@
+import 'dart:html';
+
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 
@@ -30,25 +32,37 @@ class SettingsPage extends PageBase<SettingsPageArguments> {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  BoxDecoration get _gradientBox => BoxDecoration(
+    gradient: LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Constants.theme.background, Colors.transparent]
+    )
+  );
+
   Widget _sectionTitle(String title, {IconData icon}) 
-    => flexp(1, Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          icon == null 
-            ? spex(2) 
-            : flexp(2,
-                Icon(icon, color: Constants.theme.secondaryAccent)
-              ),
-          flexp(10,
-            Txt.h1(
-              title,
-              style: textColor(Constants.theme.secondaryAccent)
-            )
-          )
-        ],
-      ),
-    );
+    => flexp(2,Container(
+        decoration: _gradientBox,
+        child: 
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
+
+            children: [
+              icon == null 
+                ? spex(1) 
+                : flexp(1,
+                    Icon(icon, color: Constants.theme.secondaryAccent)
+                  ),
+              flexp(10,
+                Txt.h1(
+                  title,
+                  style: textColor(Constants.theme.secondaryAccent)
+                )
+              )
+            ],
+          ),
+    ));
 
   Widget _sectionList({
     List<Widget> children,
@@ -102,6 +116,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return Container(
       height: 130,
+      decoration: BoxDecoration(
+        border: BorderDirectional(
+          bottom: BorderSide(color: Constants.theme.varBackground)
+        )
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,11 +130,11 @@ class _SettingsPageState extends State<SettingsPage> {
               icon: snippet.runOnInit ? Icons.favorite : Icons.favorite_border,
               onPressed: () {
                 snippet.runOnInit = !snippet.runOnInit;
-                setState((){});
+                onSave?.call(snippet);
               },
             )
           ),
-          flexp(8,
+          flexp(9,
           isEditing ? Column(
             children: [
               flexp(1,
@@ -153,15 +172,17 @@ class _SettingsPageState extends State<SettingsPage> {
                   color: Constants.theme.secondaryAccent,
                   onPressed: () => _toggleEdit(snippet.uuid, force: false)
                 ),
+                spex(1),
               ],
             ) : Column(
               children: [
-                spex(2),
+                spex(1),
                 btn("Delete", 
                   color: Constants.theme.error,
                   icon: Icons.delete_forever, 
                   onPressed: () => onDelete?.call(snippet)
                 ),
+                spex(2)
               ],
             )
           ) 
@@ -198,11 +219,12 @@ class _SettingsPageState extends State<SettingsPage> {
 
           return Column(children: [
               _sectionTitle("Settings", icon: Icons.settings_applications),
-              flexp(3,
+              flexp(7,
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
-                  flexp(5,
+                  flexp(6,
                     CheckboxListTile(
                       value: appState.config.hideSuggestions,
                       onChanged: (v) {
@@ -214,33 +236,48 @@ class _SettingsPageState extends State<SettingsPage> {
                       controlAffinity: ListTileControlAffinity.leading,
                     )
                   ),
-                  flexp(3,
-                    Column(children: [
-                      RadioListTile(
-                          value: JseVerbosity.quiet,
-                          groupValue: appState.config.verbosity,
-                          onChanged: _setVerbosity,
-                          title: Txt.p("Quiet")
-                        ),
-                        RadioListTile(
-                          value: JseVerbosity.normal,
-                          groupValue: appState.config.verbosity,
-                          onChanged: _setVerbosity,
-                          title: Txt.p("Normal")
-                        ),
-                        RadioListTile(
-                          value: JseVerbosity.verbose,
-                          groupValue: appState.config.verbosity,
-                          onChanged: _setVerbosity,
-                          title: Txt.p("Verbose")
+                  flexp(6,
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                      flexp(2,
+                        ListTile(
+                          title: Txt.h2("Verobsity"),
+                          subtitle: Txt.p("How much info to output from JavaScript engine"),
                         )
-                    ])
-                  )
+                      ),
+                      flexp(2,
+                        ListTile(
+                          leading: Icon(
+                            appState.config.verbosity == JseVerbosity.quiet
+                              ? Icons.chat_bubble_outline 
+                              : appState.config.verbosity == JseVerbosity.verbose 
+                                ? Icons.chat_rounded
+                                : Icons.chat_outlined
+                          ),
+
+                          title: DropdownButton<JseVerbosity>(
+                            items: [
+                              ...JseVerbosity.values.map((v) => DropdownMenuItem(
+                                child: Txt.p(v.toString().replaceFirst("JseVerbosity.", "")),
+                                value: v
+                              ))
+                            ],
+                            value: appState.config.verbosity,
+                            onChanged: _setVerbosity,
+                          )
+                        )
+                      ),
+                      spex(1)
+                    ]),
+                  ),
+                  spex(1)
                 ],
               )),
               _sectionTitle("Snippets", icon: LineAwesomeIcons.javascript__js_),
               _sectionList(
-                flex: 5,
+                flex: 10,
                 children: <Widget>[
                   ...appState.snippets.map((snippet) 
                     => _editSnippet(
@@ -279,7 +316,7 @@ class _SettingsPageState extends State<SettingsPage> {
             Divider(),
               _sectionTitle("Input history", icon: Icons.history),
               _sectionList(
-                flex: 4,
+                flex: 5,
                 children: <Widget>[
                   ...appState.history.map((h) {
                     return ListTile(
