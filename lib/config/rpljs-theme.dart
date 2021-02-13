@@ -192,39 +192,65 @@ class RpljsColors {
   static Map<String, String> _hexColors = {
     'blackish': '#101014',
     'dark_grey': '#1F171F',
-    'dark_pink': '#332633',
     'grey': '#474759',
+    'greyish': '#626661',
     'light_grey': '#8585A6',
     'whiteish': '#F4FFF2',
-    'greyish': '#626661',
+
+    'dark_pink': '#332633',
+    'greyish_pink': '#4D1F4D',
     'pink': '#B312B3',
-    'red': '#B31212',
-    'orange': '#C26100',
-    'yellow': '#E6C317',
-    'green': '#55FF33',
-    'blue': '#33BBFF',
-    'purple': '#9933FF',
-    'light_pink': '#FF33FF',
+    'light_pink': '#FF33FF', // #FF19FF
     'pale_pink': '#DA75FF',
-    'greyish_pink': '#4D1F4D'
+
+    'dark_red': '#730B0B',
+    'red': '#B31212',
+
+    'dark_orange': '#73410F',
+    'orange': '#C26100',
+
+    'dark_yellow': '#6B4B24',
+    'yellow': '#D19347',
+
+    'dark_green': '#178C00',
+    'green': '#25DB00',
+
+    'dark_blue': '#005C8A',
+    'blue': '#33BBFF',
+
+    'dark_purple': '#4D1980',
+    'purple': '#9933FF',
   };
 
   Color get blackish  => hexToColor(_hexColors['blackish']);
   Color get darkGrey  => hexToColor(_hexColors['dark_grey']);
-  Color get darkPink  => hexToColor(_hexColors['dark_pink']);
   Color get grey      => hexToColor(_hexColors['grey']);
+  Color get greyish   => hexToColor(_hexColors['greyish']);
   Color get lightGrey => hexToColor(_hexColors['light_grey']);
   Color get whiteish  => hexToColor(_hexColors['whiteish']);
-  Color get greyish   => hexToColor(_hexColors['greyish']);
+
+  Color get darkPink  => hexToColor(_hexColors['dark_pink']);
+  Color get greyishPink  => hexToColor(_hexColors['greyish_pink']);
   Color get pink      => hexToColor(_hexColors['pink']);
-  Color get red       => hexToColor(_hexColors['red']);
-  Color get orange    => hexToColor(_hexColors['orange']);
-  Color get yellow    => hexToColor(_hexColors['yellow']);
-  Color get green     => hexToColor(_hexColors['green']);
-  Color get blue      => hexToColor(_hexColors['blue']);
-  Color get purple    => hexToColor(_hexColors['purple']);
   Color get lightPink => hexToColor(_hexColors['light_pink']);
   Color get palePink  => hexToColor(_hexColors['pale_pink']);
-  Color get greyishPink  => hexToColor(_hexColors['greyish_pink']);
+
+  Color get darkRed  => hexToColor(_hexColors['dark_red']);
+  Color get red       => hexToColor(_hexColors['red']);
+
+  Color get darkOrange => hexToColor(_hexColors['dark_orange']);
+  Color get orange    => hexToColor(_hexColors['orange']);
+
+  Color get darkYellow => hexToColor(_hexColors['dark_yellow']);
+  Color get yellow    => hexToColor(_hexColors['yellow']);
+
+  Color get darkGreen => hexToColor(_hexColors['dark_green']);
+  Color get green     => hexToColor(_hexColors['green']);
+
+  Color get darkBlue      => hexToColor(_hexColors['dark_blue']);
+  Color get blue      => hexToColor(_hexColors['blue']);
+
+  Color get darkPurple  => hexToColor(_hexColors['dark_purple']);
+  Color get purple    => hexToColor(_hexColors['purple']);
 }
 

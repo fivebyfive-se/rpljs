@@ -8,7 +8,7 @@ import 'package:rpljs/helpers/text-style-helpers.dart';
 
 import 'package:rpljs/views/base/page-arguments.dart';
 import 'package:rpljs/views/settings-page.dart';
-import 'package:rpljs/widgets/rpljs-logo.dart';
+import 'package:rpljs/widgets/logo.dart';
 import 'package:rpljs/widgets/txt.dart';
 
 Drawer scaffoldDrawer<T extends PageArguments>(
@@ -29,7 +29,7 @@ Drawer scaffoldDrawer<T extends PageArguments>(
                 ],
               ),
               image: DecorationImage(
-                image: rpljsLogoProvider(),
+                image: logoProvider(logo: Logos.rpljs),
                 alignment: Alignment.center,
                 fit: BoxFit.scaleDown,
                 scale: 0.5
